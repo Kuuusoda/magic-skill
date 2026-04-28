@@ -1,0 +1,20 @@
+{
+  "name": {
+    "zh": "赎罪圣徒 艾拉提尔",
+    "en": "Aretiel, Penitent Saint"
+  },
+  "manaCost": "{1}{W}{B}",
+  "type": "传奇生物 ~ 人类/僧侣",
+  "text": {
+    "zh": "当 ~ 进战场时，在其上放置两个 -1/-1 指示物。\n每当另一个由你操控的生物死去时，移去 ~ 上的一个 -1/-1 指示物，且你获得 1 点生命。\n只要 ~ 上没有 -1/-1 指示物，它便具有系命异能。",
+    "en": "When ~ enters the battlefield, put two -1/-1 counters on it.\nWhenever another creature you control dies, remove a -1/-1 counter from ~ and you gain 1 life.\nAs long as ~ has no -1/-1 counters on it, it has lifelink."
+  },
+  "flavorText": {
+    "zh": "她的罪以血肉为秤，以亡魂为赎。唯有他人之死，方能洗净她生前的贪婪。",
+    "en": "Her sins are weighed in flesh and blood, and paid in the souls of the dead. Only through the death of others can she cleanse the greed of her living days."
+  },
+  "rarity": "rare",
+  "power": "4",
+  "toughness": "5",
+  "designNotes": "1WB 的 4/5 在万智牌中严重超模，因此这张卡进场时实际上是 2/3（放置两个 -1/-1 指示物后）。你需要牺牲或失去另外两个生物，才能让它恢复成真正的 4/5。白+黑（Orzhov）的核心主题正是「牺牲与救赎」——用他人的生命或自己的损失换取力量。艾拉提尔的罪孽被具象化为 -1/-1 指示物，而「另一个生物死去」则是她赎罪的过程。当罪孽洗尽，她便获得系命，象征灵魂的净化与生命的回馈。适合 Token 套牌或牺牲主题（如 Orzhov Aristocrats），可以用廉价衍生物快速「解锁」她的完全形态。"
+}

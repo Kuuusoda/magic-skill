@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# macOS
+.DS_Store
+
+# Claude Code
+.claude/
+
+# Temp files
+*.tmp
+*.log
+*.pdf
