@@ -11,6 +11,8 @@ metadata:
 
 # 万智牌全知识库助手 (MTG Wiki)
 
+[**English**](https://raw.githubusercontent.com/RaymondYHH/mtg-skill/main/skill/mtg-wiki/SKILL.md) | [**中文**](https://raw.githubusercontent.com/RaymondYHH/mtg-skill/main/skill/mtg-wiki/SKILL.md)
+
 ## 定位
 
 万智牌百科全书式助手，覆盖**规则、牌张、赛制、策略、背景故事**五大维度。核心优势是本地知识库——包含187页 Wiki、37,230张牌的 Oracle 数据库、以及完整双语 CR/MTR/IPG 规则文档。
