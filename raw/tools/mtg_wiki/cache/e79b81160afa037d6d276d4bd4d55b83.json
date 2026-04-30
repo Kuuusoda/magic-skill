@@ -1,0 +1,146 @@
+{
+  "object": "card",
+  "id": "e16d52ca-f8de-4852-9bff-9d208e5f678f",
+  "oracle_id": "d476f4b3-db63-4756-ab76-4b35f63c2825",
+  "multiverse_ids": [
+    599090
+  ],
+  "mtgo_id": 107957,
+  "tcgplayer_id": 457622,
+  "cardmarket_id": 688777,
+  "name": "Life // Death",
+  "lang": "en",
+  "released_at": "2023-01-13",
+  "uri": "https://api.scryfall.com/cards/e16d52ca-f8de-4852-9bff-9d208e5f678f",
+  "scryfall_uri": "https://scryfall.com/card/dmr/216/life-death?utm_source=api",
+  "layout": "split",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_uris": {
+    "small": "https://cards.scryfall.io/small/front/e/1/e16d52ca-f8de-4852-9bff-9d208e5f678f.jpg?1677291168",
+    "normal": "https://cards.scryfall.io/normal/front/e/1/e16d52ca-f8de-4852-9bff-9d208e5f678f.jpg?1677291168",
+    "large": "https://cards.scryfall.io/large/front/e/1/e16d52ca-f8de-4852-9bff-9d208e5f678f.jpg?1677291168",
+    "png": "https://cards.scryfall.io/png/front/e/1/e16d52ca-f8de-4852-9bff-9d208e5f678f.png?1677291168",
+    "art_crop": "https://cards.scryfall.io/art_crop/front/e/1/e16d52ca-f8de-4852-9bff-9d208e5f678f.jpg?1677291168",
+    "border_crop": "https://cards.scryfall.io/border_crop/front/e/1/e16d52ca-f8de-4852-9bff-9d208e5f678f.jpg?1677291168"
+  },
+  "mana_cost": "{G} // {1}{B}",
+  "cmc": 3.0,
+  "type_line": "Sorcery // Sorcery",
+  "colors": [
+    "B",
+    "G"
+  ],
+  "color_identity": [
+    "B",
+    "G"
+  ],
+  "keywords": [],
+  "card_faces": [
+    {
+      "object": "card_face",
+      "name": "Life",
+      "mana_cost": "{G}",
+      "type_line": "Sorcery",
+      "oracle_text": "All lands you control become 1/1 creatures until end of turn. They're still lands.",
+      "artist": "Anthony S. Waters",
+      "artist_id": "f009de11-3c8d-4663-b996-ca0c3e997fad",
+      "illustration_id": "c5e3597c-655c-44be-937c-92fb92017762"
+    },
+    {
+      "object": "card_face",
+      "name": "Death",
+      "mana_cost": "{1}{B}",
+      "type_line": "Sorcery",
+      "oracle_text": "Return target creature card from your graveyard to the battlefield. You lose life equal to its mana value.",
+      "artist": "Scott Murphy",
+      "artist_id": "07c7ac65-dfa6-4273-9c66-ec9d8f3e2226"
+    }
+  ],
+  "legalities": {
+    "standard": "not_legal",
+    "future": "not_legal",
+    "historic": "legal",
+    "timeless": "legal",
+    "gladiator": "legal",
+    "pioneer": "not_legal",
+    "modern": "not_legal",
+    "legacy": "legal",
+    "pauper": "not_legal",
+    "vintage": "legal",
+    "penny": "not_legal",
+    "commander": "legal",
+    "oathbreaker": "legal",
+    "standardbrawl": "not_legal",
+    "brawl": "legal",
+    "alchemy": "not_legal",
+    "paupercommander": "not_legal",
+    "duel": "legal",
+    "oldschool": "not_legal",
+    "premodern": "legal",
+    "predh": "legal",
+    "tlr": "legal"
+  },
+  "games": [
+    "paper",
+    "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+    "nonfoil",
+    "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set_id": "ca4c2884-e539-4b7f-980d-5d6a50220f2a",
+  "set": "dmr",
+  "set_name": "Dominaria Remastered",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/ca4c2884-e539-4b7f-980d-5d6a50220f2a",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Admr&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/dmr?utm_source=api",
+  "rulings_uri": "https://api.scryfall.com/cards/e16d52ca-f8de-4852-9bff-9d208e5f678f/rulings",
+  "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Ad476f4b3-db63-4756-ab76-4b35f63c2825&unique=prints",
+  "collector_number": "216",
+  "digital": false,
+  "rarity": "uncommon",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Anthony S. Waters & Scott Murphy",
+  "artist_ids": [
+    "f009de11-3c8d-4663-b996-ca0c3e997fad",
+    "07c7ac65-dfa6-4273-9c66-ec9d8f3e2226"
+  ],
+  "illustration_id": "c5e3597c-655c-44be-937c-92fb92017762",
+  "border_color": "black",
+  "frame": "2015",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 5577,
+  "penny_rank": 326,
+  "prices": {
+    "usd": "0.27",
+    "usd_foil": "0.40",
+    "usd_etched": null,
+    "eur": "0.24",
+    "eur_foil": "0.44",
+    "tix": "0.04"
+  },
+  "related_uris": {
+    "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=599090&printed=false",
+    "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DLife%2B%252F%252F%2BDeath",
+    "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DLife%2B%252F%252F%2BDeath",
+    "edhrec": "https://edhrec.com/route/?cc=Life+%2F%2F+Death"
+  },
+  "purchase_uris": {
+    "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F457622%3Fpage%3D1",
+    "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=688777&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+    "cardhoarder": "https://www.cardhoarder.com/cards/107957?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+  }
+}

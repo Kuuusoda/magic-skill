@@ -10,7 +10,10 @@ __pycache__/
 # Claude Code
 .claude/
 
-# Temp files
+skill/mtg-wiki/*
+!skill/mtg-wiki/SKILL.md
+!skill/mtg-wiki/SKILL_EN.md
+
 *.tmp
 *.log
 *.pdf
