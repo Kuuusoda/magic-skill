@@ -1,0 +1,193 @@
+{
+  "count": 1,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 1,
+  "items": [
+    {
+      "id": "06b0b327-9da7-4652-ba4a-cb2db6b75e92",
+      "mtgjson_id": "7fdf5ded-e3a8-5282-87a5-b7d0de444a85",
+      "face_index": -1,
+      "lang": "en",
+      "oracle_id": "bb7cebb7-a979-4879-b834-deab13f2a22c",
+      "layout": "normal",
+      "arena_id": null,
+      "mtgo_id": 106775,
+      "mtgo_foil_id": null,
+      "multiverse_id": 605576,
+      "tcgplayer_id": 478719,
+      "tcgplayer_etched_id": null,
+      "cardmarket_id": 693395,
+      "cmc": 2,
+      "color_identity": [
+        "W"
+      ],
+      "color_indicator": null,
+      "colors": [
+        "W"
+      ],
+      "defense": null,
+      "game_changer": false,
+      "hand_modifier": null,
+      "keywords": [
+        "For Mirrodin!",
+        "Equip"
+      ],
+      "life_modifier": null,
+      "loyalty": null,
+      "mana_cost": "{1}{W}",
+      "name": "Glimmer Lens",
+      "face_name": null,
+      "oracle_text": "For Mirrodin! (When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.)\nWhenever equipped creature and at least one other creature attack, draw a card.\nEquip {1}{W}",
+      "power": null,
+      "produced_mana": null,
+      "reserved": false,
+      "toughness": null,
+      "type_line": "Artifact — Equipment",
+      "artist": "Sidharth Chaturvedi",
+      "artist_ids": [
+        "55e6d846-2f73-4fba-9b88-441686bb8dcb"
+      ],
+      "attraction_lights": null,
+      "booster": false,
+      "border_color": "black",
+      "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "collector_number": "44",
+      "content_warning": null,
+      "digital": false,
+      "finishes": [
+        "nonfoil"
+      ],
+      "flavor_name": null,
+      "flavor_text": null,
+      "frame_effects": [
+        "extendedart"
+      ],
+      "frame": "2015",
+      "full_art": false,
+      "games": [
+        "paper",
+        "mtgo"
+      ],
+      "highres_image": true,
+      "illustration_id": "ab741fdf-9ec6-4867-a7a8-846ded85a30b",
+      "image_status": "highres_scan",
+      "oversized": false,
+      "printed_name": null,
+      "printed_text": null,
+      "printed_type_line": null,
+      "promo": false,
+      "promo_types": [
+        "boosterfun"
+      ],
+      "rarity": "rare",
+      "released_at": "2023-02-10",
+      "reprint": false,
+      "set_name": "Phyrexia: All Will Be One Commander",
+      "set_type": "commander",
+      "set": "ONC",
+      "set_id": "8c5e86d4-ae2d-42f7-a0e5-0e4141eb953d",
+      "story_spotlight": false,
+      "textless": false,
+      "variation": false,
+      "variation_of": null,
+      "security_stamp": "oval",
+      "watermark": null,
+      "image_uris": {
+        "small": "https://images.mtgch.com/sf/small/front/0/6/06b0b327-9da7-4652-ba4a-cb2db6b75e92.webp?ts=1677245624",
+        "normal": "https://images.mtgch.com/sf/normal/front/0/6/06b0b327-9da7-4652-ba4a-cb2db6b75e92.webp?ts=1677245624",
+        "large": "https://images.mtgch.com/sf/large/front/0/6/06b0b327-9da7-4652-ba4a-cb2db6b75e92.webp?ts=1677245624",
+        "art_crop": "https://images.mtgch.com/sf/art_crop/front/0/6/06b0b327-9da7-4652-ba4a-cb2db6b75e92.webp?ts=1677245624"
+      },
+      "zhs_image_uris": {
+        "small": "https://images.mtgch.com/zhs/small/front/0/6/06b0b327-9da7-4652-ba4a-cb2db6b75e92.webp?ts=1756713600",
+        "normal": "https://images.mtgch.com/zhs/normal/front/0/6/06b0b327-9da7-4652-ba4a-cb2db6b75e92.webp?ts=1756713600",
+        "large": "https://images.mtgch.com/zhs/large/front/0/6/06b0b327-9da7-4652-ba4a-cb2db6b75e92.webp?ts=1756713600"
+      },
+      "object": "card",
+      "prints_search_uri": null,
+      "rulings_uri": null,
+      "scryfall_uri": null,
+      "uri": null,
+      "scryfall_set_uri": null,
+      "set_search_uri": null,
+      "set_uri": null,
+      "preview_previewed_at": "2023-01-19",
+      "preview_source_uri": "https://www.youtube.com/watch?v=80xv4ZP1k-E",
+      "preview_source": "MTG Muddstah",
+      "zhs_multiverse_id": 605640,
+      "zhs_name": "烁光镜",
+      "zhs_face_name": null,
+      "zhs_flavor_name": null,
+      "zhs_type_line": "神器～武具",
+      "zhs_text": "秘罗万岁！\\n每当佩带此武具的生物与至少另一个生物攻击时，抓一张牌。\\n佩带{1}{W}",
+      "zhs_flavor_text": null,
+      "zhs_language": "Chinese Simplified",
+      "zhs_image": "官方",
+      "zhs_extra": null,
+      "atomic_official_name": "烁光镜",
+      "full_official_name": null,
+      "atomic_translated_name": null,
+      "full_translated_name": null,
+      "atomic_name_translated_from": null,
+      "atomic_translated_type": "神器～武具",
+      "atomic_translated_text": "秘罗万岁！（当此武具进场时，派出一个2/2红色反抗军衍生生物，然后将它贴附于其上。）\\n每当佩带此武具的生物与至少另一个生物攻击时，抓一张牌。\\n佩带{1}{W}",
+      "atomic_text_translated_from": "MTGZH",
+      "atomic_translated_flavor_name": null,
+      "atomic_translated_flavor_text": null,
+      "atomic_flavor_translated_from": null,
+      "set_translated_name": "非瑞克西亚：万界归一指挥官",
+      "keyrune_code": "ONC",
+      "int_collector_number": 44,
+      "is_extras": null,
+      "is_default": null,
+      "pinyin": null,
+      "pinyin_first_letter": null,
+      "other_faces": [],
+      "is_preview": false,
+      "legalities": {
+        "standard": "not_legal",
+        "future": "not_legal",
+        "historic": "legal",
+        "timeless": "legal",
+        "gladiator": "legal",
+        "pioneer": "not_legal",
+        "modern": "not_legal",
+        "legacy": "legal",
+        "pauper": "not_legal",
+        "vintage": "legal",
+        "penny": "not_legal",
+        "commander": "legal",
+        "oathbreaker": "legal",
+        "standardbrawl": "not_legal",
+        "brawl": "legal",
+        "alchemy": "not_legal",
+        "paupercommander": "not_legal",
+        "duel": "legal",
+        "oldschool": "not_legal",
+        "premodern": "not_legal",
+        "predh": "not_legal"
+      },
+      "prices": {
+        "usd": "1.59",
+        "tix": "6.40"
+      },
+      "all_parts": [
+        {
+          "id": "a41eb9df-d8b4-4697-a759-886faf16754d",
+          "component": "token",
+          "name": "Rebel",
+          "type_line": "Token Creature — Rebel"
+        },
+        {
+          "id": "06b0b327-9da7-4652-ba4a-cb2db6b75e92",
+          "component": "combo_piece",
+          "name": "Glimmer Lens",
+          "type_line": "Artifact — Equipment"
+        }
+      ],
+      "extra_fields": null,
+      "rulings": null
+    }
+  ]
+}
