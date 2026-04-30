@@ -1,5 +1,7 @@
 # Magic Skill — Magic: The Gathering General-Purpose Knowledge Infrastructure
 
+[**English**](README_EN.md) | [**中文**](README.md)
+
 This project is the **MTG General-Purpose Knowledge Infrastructure**, built and maintained by an LLM, serving multiple downstream consumers: judge rulings, strategy research, content creation, DIY card design, and more. Inspired by karpathy's llm-wiki, this Wiki acts as the core knowledge layer between raw sources (rule documents, card data, articles) and user questions.
 
 ## Project Structure

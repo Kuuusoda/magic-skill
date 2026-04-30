@@ -1,5 +1,7 @@
 # Magic Skill — 万智牌通用知识基础设施
 
+[**English**](README_EN.md) | [**中文**](README.md)
+
 本项目是 **万智牌通用知识基础设施**（Magic: The Gathering General-Purpose Knowledge Infrastructure），由 LLM 构建和维护，服务于多个消费分支：裁判规则判定、策略研究、内容创作、DIY 卡牌设计等。基于 karpathy llm-wiki 启发，Wiki 作为核心知识库，在原始资料（规则文档、牌张数据、文章）和用户问题之间建立结构化的、可积累的知识层。
 
 ## 项目定位
