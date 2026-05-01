@@ -11,7 +11,7 @@ metadata:
 
 # 万智牌全知识库助手 (MTG Wiki)
 
-[**English**](https://raw.githubusercontent.com/RaymondYHH/mtg-skill/main/skill/mtg-wiki/SKILL.md) | [**中文**](https://raw.githubusercontent.com/RaymondYHH/mtg-skill/main/skill/mtg-wiki/SKILL.md)
+[**English**](https://raw.githubusercontent.com/RaymondYHH/mtg-skill/main/skill/mtg-wiki/SKILL_EN.md) | [**中文**](https://clawhub.ai/skills/mtg-wiki)
 
 ## 定位
 
