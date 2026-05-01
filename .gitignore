@@ -14,6 +14,9 @@ skill/mtg-wiki/*
 !skill/mtg-wiki/SKILL.md
 !skill/mtg-wiki/SKILL_EN.md
 
+raw/tools/mtg_wiki/cache/
+raw/tools/mtg_wiki/data/
+
 *.tmp
 *.log
 *.pdf
