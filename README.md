@@ -1,6 +1,8 @@
 # Magic Skill — 万智牌通用知识基础设施
 
-本项目是 **万智牌通用知识基础设施**（Magic: The Gathering General-Purpose Knowledge Infrastructure），由 LLM 构建和维护，服务于多个消费分支：裁判规则判定、策略研究、内容创作、DIY 卡牌设计等。基于karpathy llm-wiki启发，Wiki 作为核心知识库，在原始资料（规则文档、牌张数据、文章）和用户问题之间建立结构化的、可积累的知识层。
+[**English**](README_EN.md) | [**中文**](README.md)
+
+本项目是 **万智牌通用知识基础设施**（Magic: The Gathering General-Purpose Knowledge Infrastructure），由 LLM 构建和维护，服务于多个消费分支：裁判规则判定、策略研究、内容创作、DIY 卡牌设计等。基于 karpathy llm-wiki 启发，Wiki 作为核心知识库，在原始资料（规则文档、牌张数据、文章）和用户问题之间建立结构化的、可积累的知识层。
 
 ## 项目定位
 
@@ -50,13 +52,13 @@
 │   ├── sources/                    # 来源摘要
 │   ├── entities/                   # 实体页：人物、组织、产品
 │   ├── concepts/                   # 概念页：规则、机制、策略术语
-│   ├── synthesis/                  # 综合分析
+│   ├── synthesis/                 # 综合分析
 │   └── branches/                   # 各分支专用层
 │       ├── referee/                # 裁判分支（当前聚焦）
 │       │   ├── decision-trees/     # 裁判决策树（按机制/关键词组织）
 │       │   ├── frameworks/         # 分析框架（层系统、堆叠推演等）
 │       │   ├── common-traps/       # 常见陷阱与误判
-│       │   ├── mtr-ipg-guides/     # 比赛规则与违规处理指南
+│       │   ├── mtr-ipg-guides/    # 比赛规则与违规处理指南
 │       │   └── test-questions/     # 测试题库
 │       ├── strategy/               # 策略分支（预留）
 │       ├── creation/               # 创作分支（预留）
