@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Verdict",
+  "type": "object",
+  "required": ["status", "card_check", "rule_check", "evidence_check", "citation_check", "notes"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["PASS", "WARN", "BLOCK"]
+    },
+    "card_check": {
+      "type": "string",
+      "enum": ["PASS", "FAIL"]
+    },
+    "rule_check": {
+      "type": "string",
+      "enum": ["PASS", "FAIL"]
+    },
+    "evidence_check": {
+      "type": "string",
+      "enum": ["PASS", "WARN", "FAIL"]
+    },
+    "citation_check": {
+      "type": "string",
+      "enum": ["PASS", "FAIL"]
+    },
+    "notes": { "type": "string" }
+  }
+}

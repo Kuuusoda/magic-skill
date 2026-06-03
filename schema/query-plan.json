@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryPlan",
+  "type": "object",
+  "required": ["cards", "rule_keywords", "question_type", "needs_rulings", "needs_strategy"],
+  "properties": {
+    "cards": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "需要查询的中文牌名列表"
+    },
+    "rule_keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "需要查询的规则关键词/编号列表"
+    },
+    "question_type": {
+      "type": "string",
+      "enum": ["interaction", "rule", "policy", "format"],
+      "description": "问题类型"
+    },
+    "needs_rulings": {
+      "type": "boolean",
+      "description": "是否需要查 WotC 裁定"
+    },
+    "needs_strategy": {
+      "type": "boolean",
+      "description": "是否需要查策略文档"
+    }
+  }
+}

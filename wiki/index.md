@@ -15,6 +15,7 @@
 - [[2026-04-22-17lands-tmt|17lands TMT Premier Draft 数据]] — TMT 系列限制赛数据统计（210 张牌、数十万对局）
 - [[2026-04-22-17lands-tdm|17lands TDM Premier Draft 数据]] — TDM 系列限制赛数据（281 张牌，覆盖率有限，含幸存者偏差分析）
 - [[2026-04-22-17lands-ecl|17lands ECL TradDraft 数据]] — ECL 系列限制赛数据（288 张牌，覆盖率 77–99%，数据质量最高）
+- [[2026-05-20-wpn-retailer-policies|WPN 零售商方针]] — WPN 认证零售店运营政策：产品发布、促销材料、营销规范（英文版）
 
 ## 实体
 
@@ -65,6 +66,7 @@
 - [[game-play-errors|游戏行动失误]] — GPE 五大分类与处理原则
 - [[tournament-errors|比赛失误]] — TE 分类与升级路径
 - [[unsporting-conduct|举止违背运动道德]] — 从轻微到作弊的分级处理
+- [[wpn-retailer-policies|WPN 零售商方针]] — WPN 认证店的运营标准：产品发布、促销管理、营销材料使用规范
 
 ### 具体赛制
 - [[mtg-formats|万智牌赛制]] — 构筑、限制、休闲等官方赛制分类
@@ -259,6 +261,7 @@
 - [[sos-limited-analysis|SOS 限制赛全面分析]] — 基于卡牌组成推断的 School of Spells 限制赛环境预测（结合 TMT/TDM/ECL 跨系列模式）
 - [[blue-farm-analysis|Blue Farm 全面分析]] — Kraum/Tymna 竞技指挥官套牌的时间横向与 Meta 纵向联合分析
 - [[2026-04-23-sos-draft-p2p-choice|SOS 轮抽抉择分析]] — 连辞套牌第二抓选牌策略（振奋塑望师 → Snooping Page）
+- [[branches/strategy/decks/tameshi-belcher|Tameshi Belcher（无地蓝炮）套牌分析]] — Modern Tier 3 蓝白零地组合技，15 份牌表完整 10 节解析（核心机制 / Karsten / 12 对局实测 / 7 条 CR 互动）
 
 ## 输出
 
