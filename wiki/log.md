@@ -2,6 +2,26 @@
 
 按时间顺序记录的 Ingest、Query 和 Lint 操作。
 
+## [2026-06-03] ingest | 完整规则（CR）2026年4月17日中文版更新
+
+将中文 CR 更新至 2026-04-17 生效版（Secrets of Strixhaven）：
+- `magic-comp-rules-zh-cn/markdown/` → `raw/cr/`（9 个文件变更）
+- 规则结构变化：新增 730 节「与永久物结聚」、732「进行简化」、733「处理非法动作」
+- 类别更新：书籍、突变剂、德连、长颈鹿、乌创
+- 异能提示新增：消失、输注、炫示、连辞
+- 新建来源摘要：wiki/sources/2026-06-03-cr-2026-apr17-zh.md
+- 更新概念页：wiki/concepts/comprehensive-rules.md
+- 更新索引：wiki/index.md
+
+## [2026-06-03] ingest | MTR 2026-02-27 英文版 + IPG 2024-09-23 英文版
+
+将官方英文 PDF 转录为 Markdown：
+- MTR PDF `MTG_MTR_2026_Feb27_EN-2.pdf` → `raw/mtr/mtr_2026_feb27_en.md`（56 页，10 章 + 6 附录）
+- IPG PDF `mtg_ipg_2024sep23_en.pdf` → `raw/ipg/ipg_2024_sep23_en.md`（31 页，4 节 + 2 附录）
+- 新建来源摘要：wiki/sources/2026-06-03-mtr-2026-feb27-en.md、wiki/sources/2026-06-03-ipg-2024-sep23-en.md
+- 更新概念页：wiki/concepts/magic-tournament-rules.md（增加英文原文引用）、wiki/concepts/infraction-procedure-guide.md（英文原文引用）
+- 更新索引：wiki/index.md
+
 ## [2026-05-20] ingest | WPN 零售商方针
 
 来源 URL https://wpn.wizards.com/zh-Hans/wpn-retailer-policies#PromosProducts，因中文页面 JS 动态渲染限制，实际摄入英文版完整文本：

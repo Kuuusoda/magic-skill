@@ -1,9 +1,9 @@
 ---
 created: 2026-04-14
-updated: 2026-04-14
+updated: 2026-06-03
 type: concept
 tags: [万智牌, 完整规则, CR, 游戏规则]
-sources: [cr/intro.md, cr/index.md]
+sources: [cr/intro.md, cr/index.md, cr/1.md, cr/2.md, cr/7.md, cr/glossary.md]
 ---
 
 # 完整规则（Comprehensive Rules，CR）
@@ -112,7 +112,12 @@ CR 是解决所有游戏规则争议的最终依据。当比赛中出现对规�
 - [[synthesis/mtg-official-documents|万智牌官方文档体系概览]]
 - [[万智牌全牌张数据库（JSON）|万智牌全牌张数据库]]
 
+## 最新更新
+
+2026年4月17日生效版（Secrets of Strixhaven 发布）为当前最新版本。相较于前一版本（2026-01-16），第七章新增三节：730「与永久物结聚」、732「进行简化」、733「处理非法动作」。新增神器类别「书籍」「突变剂」、鹏洛客类别「德连」、生物类别「长颈鹿」「乌创」、异能提示「消失」「输注」「炫示」「连辞」。
+
 ## 来源
 
-- [[万智牌完整规则（Markdown 中文版）|2026-04-14-cr-markdown]]
-- [[万智牌完整规则（PDF 版）|2026-04-14-cr-pdf]]
+- [[2026-06-03-cr-2026-apr17-zh|完整规则 — 2026年4月17日中文更新版]]
+- [[2026-04-14-cr-markdown|完整规则 — 2026年1月16日中文版（旧版）]]
+- [[2026-04-14-cr-pdf|完整规则（PDF 版）]]

@@ -1,9 +1,9 @@
 ---
 created: 2026-04-14
-updated: 2026-04-14
+updated: 2026-06-03
 type: concept
 tags: [万智牌, 违规处理方针, IPG, 裁判, 竞技]
-sources: [ipg/intro.md, ipg/ipg.md]
+sources: [ipg/intro.md, ipg/ipg.md, mtg_ipg_2024sep23_en.pdf, ipg_2024_sep23_en.md]
 ---
 
 # 违规处理方针（Infraction Procedure Guide，IPG）
@@ -60,6 +60,11 @@ IPG 的存在旨在保护牌手免受潜在失误影响，并维护比赛的公�
 - [[rules-enforcement-level|执法严格度]]
 - [[comprehensive-rules|完整规则]]
 
+## 英文原文
+
+2024年9月23日生效的英文 IPG PDF 已转录为 Markdown：`raw/ipg/ipg_2024_sep23_en.md`。中文翻译基于此英文版本。争议裁决时以英文原文为准。
+
 ## 来源
 
-- [[万智牌违规处理方针（IPG）|2026-04-14-ipg]]
+- [[2026-04-14-ipg|万智牌违规处理方针（IPG）— 中文版]]
+- [[2026-06-03-ipg-2024-sep23-en|万智牌违规处理方针（IPG）— 2024年9月23日英文版]]
