@@ -161,6 +161,23 @@ Periodically scan for contradictions, outdated claims, orphaned pages, broken li
 | `raw/data/generate_keyword_pages.py` | Auto-generate concept pages from keyword corpus |
 | `raw/data/generate_missing_pages.py` | Identify and scaffold missing wiki pages |
 
+
+### Chinese Card Name Lookup
+
+`name_translator.py` supports EN↔CN bidirectional translation — great for verifying official Chinese card names:
+
+```bash
+# Chinese → English
+python3 raw/tools/mtg_wiki/name_translator.py "变境"
+# {"name": "变境", "translated_name": "Scapeshift", "source": "scryfall"}
+
+# English → Chinese
+python3 raw/tools/mtg_wiki/name_translator.py "Scapeshift"
+# {"name": "Scapeshift", "translated_name": "变境", "source": "cache"}
+```
+
+Lookup order: local index → mtgch API → Scryfall API. Official translation takes priority.
+
 ## Browsing the Wiki
 
 Open the `wiki/` folder in [Obsidian](https://obsidian.md/) for the best experience:

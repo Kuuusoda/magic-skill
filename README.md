@@ -161,6 +161,23 @@
 | `raw/data/generate_keyword_pages.py` | 从关键词语料自动生成概念页 |
 | `raw/data/generate_missing_pages.py` | 识别并脚手架缺失的 wiki 页面 |
 
+
+### 单卡中文核对
+
+`name_translator.py` 支持中英双向翻译，适合快速确认官方中文译名：
+
+```bash
+# 中文 → 英文
+python3 raw/tools/mtg_wiki/name_translator.py "变境"
+# {"name": "变境", "translated_name": "Scapeshift", "source": "scryfall"}
+
+# 英文 → 中文
+python3 raw/tools/mtg_wiki/name_translator.py "Scapeshift"
+# {"name": "Scapeshift", "translated_name": "变境", "source": "cache"}
+```
+
+查找流程：本地索引 → mtgch API → Scryfall API，优先返回官方译名。
+
 ## 浏览 Wiki
 
 在 [Obsidian](https://obsidian.md/) 中打开 `wiki/` 文件夹获得最佳体验：
