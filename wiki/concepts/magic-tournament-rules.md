@@ -1,9 +1,9 @@
 ---
 created: 2026-04-14
-updated: 2026-04-14
+updated: 2026-06-03
 type: concept
 tags: [万智牌, 比赛规则, MTR, 赛事]
-sources: [mtr/intro.md, mtr/mtr.md]
+sources: [mtr/intro.md, mtr/mtr.md, MTG_MTR_2026_Feb27_EN-2.pdf, mtr_2026_feb27_en.md]
 ---
 
 # 比赛规则（Magic Tournament Rules，MTR）
@@ -38,6 +38,11 @@ MTR 确保身处不同地域的牌手在任何 DCI 认证比赛中都能获得�
 - [[mtg-formats|万智牌赛制]]
 - [[dci|DCI]]
 
+## 英文原文
+
+2026年2月27日生效的英文 MTR PDF 已转录为 Markdown：`raw/mtr/mtr_2026_feb27_en.md`。中文翻译基于此英文版本。当出现争议时，以英文原文为准。
+
 ## 来源
 
-- [[万智牌比赛规则（MTR）|2026-04-14-mtr]]
+- [[2026-04-14-mtr|万智牌比赛规则（MTR）— 中文版]]
+- [[2026-06-03-mtr-2026-feb27-en|万智牌比赛规则（MTR）— 2026年2月27日英文版]]
