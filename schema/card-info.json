@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CardInfo",
+  "type": "object",
+  "required": ["input_name", "english_name", "scryfall_id", "oracle_text", "mana_cost", "type_line"],
+  "properties": {
+    "input_name": { "type": "string" },
+    "english_name": { "type": ["string", "null"] },
+    "scryfall_id": { "type": ["string", "null"] },
+    "oracle_text": { "type": ["string", "null"] },
+    "mana_cost": { "type": ["string", "null"] },
+    "type_line": { "type": ["string", "null"] },
+    "power_toughness": { "type": ["string", "null"] },
+    "error": { "type": ["string", "null"] }
+  }
+}

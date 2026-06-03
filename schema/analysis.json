@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Analysis",
+  "type": "object",
+  "required": ["conclusion", "reasoning", "confidence", "cited_rules", "cited_cards"],
+  "properties": {
+    "conclusion": { "type": "string" },
+    "reasoning": { "type": "string" },
+    "confidence": {
+      "type": "string",
+      "enum": ["certain", "likely", "uncertain"]
+    },
+    "cited_rules": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "cited_cards": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["assumption", "evidence_based"],
+        "properties": {
+          "assumption": { "type": "string" },
+          "evidence_based": { "type": "boolean" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "needs_more_evidence": {
+      "type": ["object", "null"],
+      "properties": {
+        "rules": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

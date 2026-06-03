@@ -18,24 +18,47 @@
 
 | 指标 | 数量 |
 |------|------|
-| Wiki 页面 | **254** |
-| 概念页 | 190 |
+| Wiki 页面 | **281** |
+| 概念页 | 192 |
 | 裁判决策树 | 31 |
+| 策略套牌分析 | 14 |
 | 分析框架 | 4 |
 | 常见陷阱 | 2 |
-| 来源摘要 | 9 |
+| 来源摘要 | 10 |
 | 实体页 | 4 |
-| 综合分析 | 4 |
+| 综合分析 | 6 |
+| Python 工具 | 9 |
+| Agent 定义 | 8 |
+| Skill 定义 | 3 |
+| Schema 定义 | 5 |
 | 原始资料文件 | 103 |
 
 ## 目录结构
 
 ```
 ├── agent/                          # Agent 定义（可协作、版本控制）
-│   └── mtg-judge-zh.md             # 裁判 agent 的 persona、工作流、合规报告
+│   ├── mtg-judge-zh.md             # 裁判 agent 的 persona、工作流、合规报告
+│   ├── mtg-wiki.md                 # Wiki 通用查询 agent
+│   ├── query-decomposer.md         # 问题拆分 agent
+│   ├── card-lookup.md              # 牌张查询 agent
+│   ├── rule-lookup.md              # 规则查询 agent
+│   ├── ruling-lookup.md            # 裁定查询 agent
+│   ├── interaction-analyzer.md     # 互动分析 agent
+│   └── checker.md                  # 输出校验 agent
 ├── skill/                          # Skill 定义（可协作、版本控制）
-│   └── mtg-judge-zh/
-│       └── SKILL.md                # 裁判 skill 的触发条件、回答流程
+│   ├── mtg-judge-zh/
+│   │   └── SKILL.md                # 裁判 skill：触发条件、回答流程、校验 pipeline
+│   ├── mtg-wiki/
+│   │   ├── SKILL.md                # 万智牌全知识库 skill
+│   │   └── SKILL_EN.md             # 英文版
+│   └── modern-breaker/
+│       └── SKILL.md                # 摩登赛制破阵分析 skill
+├── schema/                         # JSON Schema 定义
+│   ├── query-plan.json             # 查询计划 schema
+│   ├── card-info.json              # 牌张信息 schema
+│   ├── rule-info.json              # 规则信息 schema
+│   ├── analysis.json               # 分析结果 schema
+│   └── verdict.json                # 裁决 schema
 ├── raw/                            # 原始资料（不可变）
 │   ├── cr/                         # 完整规则（CR 1–9 章 + 词汇表）
 │   ├── ipg/                        # 违规处理方针
@@ -60,9 +83,19 @@
 │       │   ├── common-traps/       # 常见陷阱与误判
 │       │   ├── mtr-ipg-guides/    # 比赛规则与违规处理指南
 │       │   └── test-questions/     # 测试题库
-│       ├── strategy/               # 策略分支（预留）
+│       ├── strategy/               # 策略分支
+│       │   ├── decks/              # Modern 套牌分析（14 套）
+│       │   ├── formats/            # 赛制 Meta 分析
+│       │   ├── decision-trees/     # 策略决策树
+│       │   ├── meta-snapshots/     # 环境快照
+│       │   └── card-evaluations/   # 单卡评估
 │       ├── creation/               # 创作分支（预留）
 │       └── diy/                    # DIY 分支（预留）
+├── tests/                          # 测试套件
+│   ├── validation/                 # 校验 pipeline 测试
+│   │   ├── test_edge_cases.py      # 55 个边缘测试
+│   │   └── test_correctness.py     # 21 个正确性回归测试
+│   └── logs/                       # 测试执行日志
 └── output/                         # 生成的 artifacts
     ├── cedh小屋周报/               # cEDH 赛事周报
     ├── card-generator/             # AI 卡牌设计工具
@@ -120,6 +153,9 @@
 | `raw/tools/mtg_wiki/card_search.py` | 牌张查询（本地 37K + mtgch API + Scryfall API） |
 | `raw/tools/mtg_wiki/rule_search.py` | 规则查询（支持规则号或关键词） |
 | `raw/tools/mtg_wiki/name_translator.py` | 牌名翻译（EN↔CN） |
+| `raw/tools/mtg_wiki/scryfall_rulings.py` | Scryfall 裁定查询 |
+| `raw/tools/mtg_wiki/mtgch_name_index.py` | mtgch 中文牌名索引下载与构建 |
+| `raw/tools/mtg_wiki/validation.py` | Agent 输出硬编码校验（Schema + 引用完整性） |
 | `raw/data/lint_wiki_v2.py` | 链接健康检查、孤立页面扫描、断链检测 |
 | `raw/data/process_cards.py` | 流式处理 2.3 GB all-cards JSON |
 | `raw/data/generate_keyword_pages.py` | 从关键词语料自动生成概念页 |
@@ -134,12 +170,16 @@
 
 ## Agent 集成
 
-`mtg-judge-zh` agent（万智牌中文裁判助手）以本 Wiki 为知识库之一。回答规则问题时，它综合查询：
-- 原始 CR 规则文档（`raw/cr/`）
-- 编译后的 Wiki（`wiki/concepts/`、`wiki/synthesis/`）
-- 裁判决策树（`wiki/branches/referee/decision-trees/`）
+多个 agent 以本 Wiki 为知识库协同工作：
 
-Agent 的回答流程包含**强制深度检索**和**执行合规报告**，确保规则引用准确、不凭记忆回答。
+- **mtg-wiki agent** — 通用知识库查询（牌张查询、牌名翻译、策略咨询）
+- **mtg-judge-zh agent** — 中文规则裁判（多 agent pipeline：query-decomposer → card/rule/ruling-lookup → interaction-analyzer → checker）
+- **modern-breaker skill** — 摩登赛制环境破解与备牌决策
+
+Agent pipeline 的执行流程：
+- **硬编码校验**：每个步骤后由 `validation.py` 校验 Schema 正确性
+- **Bash 优先**：数据查询（牌张、规则、裁定）用 Bash 直接调用 Python 工具，减少 LLM Agent 开销
+- **合规报告**：回答末尾附带执行合规报告，确保规则引用来自本地文件、不凭记忆回答
 
 ## 为什么选择这种方式
 

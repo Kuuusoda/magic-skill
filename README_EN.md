@@ -18,24 +18,47 @@ This project is the **MTG General-Purpose Knowledge Infrastructure**, built and 
 
 | Metric | Count |
 |--------|-------|
-| Wiki Pages | **254** |
-| Concept Pages | 190 |
+| Wiki Pages | **281** |
+| Concept Pages | 192 |
 | Judge Decision Trees | 31 |
+| Strategy Deck Analyses | 14 |
 | Analysis Frameworks | 4 |
 | Common Traps | 2 |
-| Source Summaries | 9 |
+| Source Summaries | 10 |
 | Entity Pages | 4 |
-| Synthesis Articles | 4 |
+| Synthesis Articles | 6 |
+| Python Tools | 9 |
+| Agent Definitions | 8 |
+| Skill Definitions | 3 |
+| Schema Definitions | 5 |
 | Raw Data Files | 103 |
 
 ## Directory Structure
 
 ```
 ├── agent/                          # Agent definitions (collaborative, version-controlled)
-│   └── mtg-judge-zh.md             # Judge agent: persona, workflow, compliance reports
+│   ├── mtg-judge-zh.md             # Judge agent: persona, workflow, compliance reports
+│   ├── mtg-wiki.md                 # Wiki general-purpose query agent
+│   ├── query-decomposer.md         # Question decomposition agent
+│   ├── card-lookup.md              # Card lookup agent
+│   ├── rule-lookup.md              # Rule lookup agent
+│   ├── ruling-lookup.md            # Ruling lookup agent
+│   ├── interaction-analyzer.md     # Interaction analysis agent
+│   └── checker.md                  # Output verification agent
 ├── skill/                          # Skill definitions (collaborative, version-controlled)
-│   └── mtg-judge-zh/
-│       └── SKILL.md                # Judge skill: trigger conditions, response flow
+│   ├── mtg-judge-zh/
+│   │   └── SKILL.md                # Judge skill: trigger conditions, response flow, validation pipeline
+│   ├── mtg-wiki/
+│   │   ├── SKILL.md                # MTG encyclopedia skill
+│   │   └── SKILL_EN.md             # English version
+│   └── modern-breaker/
+│       └── SKILL.md                # Modern format metagame analysis skill
+├── schema/                         # JSON Schema definitions
+│   ├── query-plan.json             # Query plan schema
+│   ├── card-info.json              # Card info schema
+│   ├── rule-info.json              # Rule info schema
+│   ├── analysis.json               # Analysis result schema
+│   └── verdict.json                # Verdict schema
 ├── raw/                            # Raw data (immutable)
 │   ├── cr/                         # Comprehensive Rules (CR chapters 1–9 + Glossary)
 │   ├── ipg/                        # Infraction Procedure Guide
@@ -60,9 +83,19 @@ This project is the **MTG General-Purpose Knowledge Infrastructure**, built and 
 │       │   ├── common-traps/       # Common pitfalls and misrulings
 │       │   ├── mtr-ipg-guides/     # Tournament and infraction guides
 │       │   └── test-questions/     # Practice question bank
-│       ├── strategy/               # Strategy branch (reserved)
+│       ├── strategy/               # Strategy branch
+│       │   ├── decks/              # Modern deck analyses (14 decks)
+│       │   ├── formats/            # Format meta analysis
+│       │   ├── decision-trees/     # Strategy decision trees
+│       │   ├── meta-snapshots/     # Meta snapshots
+│       │   └── card-evaluations/   # Card evaluations
 │       ├── creation/               # Creation branch (reserved)
 │       └── diy/                    # DIY branch (reserved)
+├── tests/                          # Test suite
+│   ├── validation/                 # Validation pipeline tests
+│   │   ├── test_edge_cases.py      # 55 edge case tests
+│   │   └── test_correctness.py     # 21 correctness regression tests
+│   └── logs/                       # Test execution logs
 └── output/                         # Generated artifacts
     ├── cedh小屋周报/               # cEDH tournament weekly reports
     ├── card-generator/             # AI card design tool
@@ -120,6 +153,9 @@ Periodically scan for contradictions, outdated claims, orphaned pages, broken li
 | `raw/tools/mtg_wiki/card_search.py` | Card search (local 37K + mtgch API + Scryfall API) |
 | `raw/tools/mtg_wiki/rule_search.py` | Rule search (by rule number or keyword) |
 | `raw/tools/mtg_wiki/name_translator.py` | Card name translation (EN↔CN) |
+| `raw/tools/mtg_wiki/scryfall_rulings.py` | Scryfall rulings lookup |
+| `raw/tools/mtg_wiki/mtgch_name_index.py` | mtgch Chinese name index download & build |
+| `raw/tools/mtg_wiki/validation.py` | Hardcoded agent output validation (Schema + citation integrity) |
 | `raw/data/lint_wiki_v2.py` | Link health check, orphaned page scan, broken link detection |
 | `raw/data/process_cards.py` | Streaming process 2.3 GB all-cards JSON |
 | `raw/data/generate_keyword_pages.py` | Auto-generate concept pages from keyword corpus |
@@ -134,12 +170,16 @@ Open the `wiki/` folder in [Obsidian](https://obsidian.md/) for the best experie
 
 ## Agent Integration
 
-The `mtg-judge-zh` agent (MTG Chinese Judge Assistant) uses this Wiki as one of its knowledge bases. When answering rules questions, it synthesizes queries from:
-- Raw CR rule documents (`raw/cr/`)
-- Compiled Wiki (`wiki/concepts/`, `wiki/synthesis/`)
-- Judge decision trees (`wiki/branches/referee/decision-trees/`)
+Multiple agents collaborate using this Wiki as their shared knowledge base:
 
-The agent's response flow includes **mandatory deep search** and **execution compliance reports**, ensuring rule citations are accurate and not based on memory.
+- **mtg-wiki agent** — General-purpose lookup (card search, name translation, strategy consulting)
+- **mtg-judge-zh agent** — Chinese rules judge (multi-agent pipeline: query-decomposer → card/rule/ruling-lookup → interaction-analyzer → checker)
+- **modern-breaker skill** — Modern format metagame analysis and sideboarding decisions
+
+Agent pipeline execution:
+- **Hardcoded validation**: Each step is validated by `validation.py` for schema correctness
+- **Bash-first**: Data queries (cards, rules, rulings) use direct Bash calls to Python tools, minimizing LLM Agent overhead
+- **Compliance reports**: Every response includes an execution compliance report, ensuring rule citations come from local files — never from memory
 
 ## Why This Approach
 

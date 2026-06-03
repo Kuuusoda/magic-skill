@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>magic_skill — Claude Code Subagent 原子化工作流架构</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-hover: #1c2128;
+      --border: #30363d;
+      --border-light: #484f58;
+      --text: #c9d1d9;
+      --text-dim: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #f85149;
+      --accent-soft: #f8514933;
+      --green: #3fb950;
+      --green-soft: #3fb95033;
+      --blue: #58a6ff;
+      --blue-soft: #58a6ff33;
+      --yellow: #d29922;
+      --yellow-soft: #d2992233;
+      --purple: #a371f7;
+      --purple-soft: #a371f733;
+      --orange: #f0883e;
+      --orange-soft: #f0883e33;
+      --cyan: #39c5cf;
+      --cyan-soft: #39c5cf33;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    h1 { font-size: 2rem; margin-bottom: 8px; color: var(--text); }
+    .subtitle { color: var(--text-dim); margin-bottom: 40px; font-size: 0.95rem; }
+    h2 { font-size: 1.3rem; margin: 40px 0 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); color: var(--blue); }
+    h3 { font-size: 1.1rem; margin: 28px 0 14px; color: var(--yellow); }
+    h4 { font-size: 0.95rem; margin: 20px 0 10px; color: var(--cyan); }
+
+    .arch-diagram { display: flex; flex-direction: column; gap: 0; margin: 30px 0; }
+    .layer { display: flex; align-items: stretch; position: relative; }
+    .layer-label { width: 160px; min-width: 160px; display: flex; align-items: center; justify-content: flex-end; padding-right: 20px; font-size: 0.82rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+    .layer-content { flex: 1; display: flex; gap: 12px; padding: 16px 20px; border-left: 3px solid var(--border); position: relative; }
+    .layer-content::before { content: ''; position: absolute; left: -3px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; background: var(--border); border-radius: 50%; }
+
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; flex: 1; min-width: 180px; }
+    .box-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .box-desc { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
+    .box-items { margin-top: 8px; font-size: 0.78rem; color: var(--text-dim); }
+    .box-items li { margin-bottom: 3px; list-style: none; padding-left: 14px; position: relative; }
+    .box-items li::before { content: '->'; position: absolute; left: 0; color: var(--accent); }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+    .badge-green { background: var(--green-soft); color: var(--green); }
+    .badge-blue { background: var(--blue-soft); color: var(--blue); }
+    .badge-yellow { background: var(--yellow-soft); color: var(--yellow); }
+    .badge-purple { background: var(--purple-soft); color: var(--purple); }
+    .badge-red { background: var(--accent-soft); color: var(--accent); }
+    .badge-cyan { background: var(--cyan-soft); color: var(--cyan); }
+    .badge-orange { background: var(--orange-soft); color: var(--orange); }
+
+    .flow-arrow { display: flex; align-items: center; justify-content: center; padding: 8px 0; color: var(--text-dim); font-size: 0.8rem; }
+    .flow-arrow .arrow { width: 2px; height: 24px; background: linear-gradient(to bottom, var(--border), var(--accent)); position: relative; }
+    .flow-arrow .arrow::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid var(--accent); }
+    .flow-label { margin-left: 12px; font-size: 0.75rem; }
+
+    .packet-box { background: var(--bg); border: 1px dashed var(--border); border-radius: 6px; padding: 14px 18px; margin: 10px 0; font-family: "SF Mono", Monaco, monospace; font-size: 0.8rem; line-height: 1.7; }
+    .packet-box .key { color: var(--blue); }
+    .packet-box .type { color: var(--yellow); }
+    .packet-box .str { color: var(--green); }
+    .packet-box .comment { color: var(--text-muted); }
+
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.85rem; }
+    th, td { padding: 10px 14px; text-align: left; border: 1px solid var(--border); }
+    th { background: var(--surface); font-weight: 600; color: var(--blue); }
+    tr:nth-child(even) { background: var(--surface-hover); }
+    .ok { color: var(--green); }
+    .warn { color: var(--yellow); }
+    .bad { color: var(--accent); }
+
+    .note { background: var(--surface); border-left: 3px solid var(--yellow); padding: 12px 16px; margin: 16px 0; font-size: 0.85rem; color: var(--text-dim); }
+    .note strong { color: var(--yellow); }
+    .note-green { background: var(--surface); border-left: 3px solid var(--green); padding: 12px 16px; margin: 16px 0; font-size: 0.85rem; color: var(--text-dim); }
+    .note-green strong { color: var(--green); }
+    .note-red { background: var(--surface); border-left: 3px solid var(--accent); padding: 12px 16px; margin: 16px 0; font-size: 0.85rem; color: var(--text-dim); }
+    .note-red strong { color: var(--accent); }
+
+    .check-item { display: flex; align-items: flex-start; gap: 8px; margin: 6px 0; font-size: 0.85rem; }
+    .check-icon { color: var(--green); font-weight: bold; min-width: 20px; }
+    .check-icon-warn { color: var(--yellow); font-weight: bold; min-width: 20px; }
+    .check-icon-fail { color: var(--accent); font-weight: bold; min-width: 20px; }
+
+    @media (max-width: 768px) {
+      .layer { flex-direction: column; }
+      .layer-label { width: auto; justify-content: flex-start; padding: 0 0 8px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>magic_skill — Claude Code Subagent 原子化工作流</h1>
+    <p class="subtitle">任务原子化拆解 → 干净上下文 Subagent → 结构化输出 → 审查机制</p>
+
+    <div class="note-red">
+      <strong>核心设计：</strong>一个规则问题进入系统后，Claude Code 作为调度器将其拆解为若干原子任务，每个任务由一个独立的 subagent 执行。subagent 之间不共享上下文，只通过结构化的数据包通信。每步输出必须经过审查才能进入下一步。
+    </div>
+
+    <h2>一、工作流总览</h2>
+
+    <div class="arch-diagram">
+      <!-- 用户输入 -->
+      <div class="layer">
+        <div class="layer-label">输入层</div>
+        <div class="layer-content" style="border-color: var(--accent);">
+          <div class="box" style="border-color: var(--accent);">
+            <div class="box-title"><span class="badge badge-red">Input</span> 用户问题</div>
+            <div class="box-desc">"AP操控闪电击，NAP操控幽灵选手。闪电击能造成伤害吗？"</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">
+        <div class="arrow"></div>
+        <span class="flow-label">Claude Code 读取 SKILL.md → 启动工作流</span>
+      </div>
+
+      <!-- Step 1: 拆分 -->
+      <div class="layer">
+        <div class="layer-label">Step 1</div>
+        <div class="layer-content" style="border-color: var(--purple);">
+          <div class="box" style="border-color: var(--purple); background: var(--purple-soft);">
+            <div class="box-title"><span class="badge badge-purple">Subagent</span> query-decomposer</div>
+            <div class="box-desc">把自然语言问题拆成结构化查询计划</div>
+            <ul class="box-items">
+              <li>提取牌名列表</li>
+              <li>识别问题类型</li>
+              <li>列出需要查的规则关键词</li>
+            </ul>
+          </div>
+          <div class="box">
+            <div class="box-title"><span class="badge badge-blue">Output</span> QueryPlan</div>
+            <div class="box-desc">{cards, rule_keywords, question_type, needs_rulings}</div>
+          </div>
+          <div class="box" style="border-color: var(--green);">
+            <div class="box-title"><span class="badge badge-green">Check</span> Schema 校验</div>
+            <div class="box-desc">输出是否符合 QueryPlan Schema？字段是否完整？</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">
+        <div class="arrow"></div>
+        <span class="flow-label">Schema 校验通过 → 进入并行查询</span>
+      </div>
+
+      <!-- Step 2: 并行查询 -->
+      <div class="layer">
+        <div class="layer-label">Step 2<br><small style="font-size:0.7rem">并行</small></div>
+        <div class="layer-content" style="border-color: var(--green);">
+          <div class="box" style="border-color: var(--green);">
+            <div class="box-title"><span class="badge badge-green">Subagent</span> card-lookup × N</div>
+            <div class="box-desc">每个 subagent 只查一张牌</div>
+            <ul class="box-items">
+              <li>输入：一个中文牌名</li>
+              <li>调用 name_translator.py</li>
+              <li>调用 card_search.py</li>
+              <li>输出：CardInfo JSON</li>
+            </ul>
+          </div>
+          <div class="box" style="border-color: var(--blue);">
+            <div class="box-title"><span class="badge badge-blue">Subagent</span> rule-lookup × N</div>
+            <div class="box-desc">每个 subagent 只查一个关键词</div>
+            <ul class="box-items">
+              <li>输入：一个规则关键词</li>
+              <li>Grep + Read 本地 CR</li>
+              <li>输出：RuleInfo JSON</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-label">审查</div>
+        <div class="layer-content" style="border-color: var(--green);">
+          <div class="box" style="border-color: var(--green);">
+            <div class="box-title"><span class="badge badge-green">Check</span> 牌面审查</div>
+            <div class="box-desc">每张牌都有 oracle_text？都有 scryfall_id？</div>
+          </div>
+          <div class="box" style="border-color: var(--green);">
+            <div class="box-title"><span class="badge badge-green">Check</span> 规则审查</div>
+            <div class="box-desc">每条规则都有 rule_number？来源都是 raw/cr/？</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">
+        <div class="arrow"></div>
+        <span class="flow-label">所有查询通过审查 → 合并证据包</span>
+      </div>
+
+      <!-- Step 3: 解析 -->
+      <div class="layer">
+        <div class="layer-label">Step 3</div>
+        <div class="layer-content" style="border-color: var(--orange);">
+          <div class="box" style="border-color: var(--orange); background: var(--orange-soft);">
+            <div class="box-title"><span class="badge badge-orange">Subagent</span> interaction-analyzer</div>
+            <div class="box-desc">基于证据包做深度解析，不查任何新信息</div>
+            <ul class="box-items">
+              <li>输入：Evidence 包（所有查询结果）</li>
+              <li>只基于传入的证据推理</li>
+              <li>输出：Analysis JSON（含 needs_more_evidence）</li>
+            </ul>
+          </div>
+          <div class="box">
+            <div class="box-title"><span class="badge badge-blue">Output</span> Analysis</div>
+            <div class="box-desc">{conclusion, reasoning, confidence, cited_rules, cited_cards, needs_more_evidence}</div>
+          </div>
+          <div class="box" style="border-color: var(--green);">
+            <div class="box-title"><span class="badge badge-green">Check</span> 引用审查</div>
+            <div class="box-desc">结论中的每个引用都在 Evidence 中？</div>
+          </div>
+          <div class="box" style="border-color: var(--yellow);">
+            <div class="box-title"><span class="badge badge-yellow">Check</span> 迭代检查</div>
+            <div class="box-desc">needs_more_evidence 非空？→ 回到 Step 2 补充查询（最多3轮）</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">
+        <div class="arrow"></div>
+        <span class="flow-label">引用审查通过 + 无需补充 → 进入验证</span>
+      </div>
+      <div class="flow-arrow">
+        <div class="arrow" style="background: linear-gradient(to bottom, var(--border), var(--yellow));"></div>
+        <span class="flow-label">需要补充证据 → 回到 Step 2 并行补充查询</span>
+      </div>
+
+      <!-- Step 4: 验证 -->
+      <div class="layer">
+        <div class="layer-label">Step 4</div>
+        <div class="layer-content" style="border-color: var(--accent);">
+          <div class="box" style="border-color: var(--accent);">
+            <div class="box-title"><span class="badge badge-red">Subagent</span> checker</div>
+            <div class="box-desc">独立验证证据和结论，不看推理过程</div>
+            <ul class="box-items">
+              <li>输入：Evidence + Analysis</li>
+              <li>硬检查：规则来源 + 牌面来源</li>
+              <li>软检查：证据链完整性</li>
+              <li>输出：Verdict JSON</li>
+            </ul>
+          </div>
+          <div class="box">
+            <div class="box-title"><span class="badge badge-blue">Output</span> Verdict</div>
+            <div class="box-desc">{status: PASS|WARN|BLOCK, checks, notes}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">
+        <div class="arrow"></div>
+        <span class="flow-label">Verdict = PASS/WARN → 输出答案</span>
+      </div>
+
+      <!-- 输出 -->
+      <div class="layer">
+        <div class="layer-label">输出层</div>
+        <div class="layer-content" style="border-color: var(--green);">
+          <div class="box" style="border-color: var(--green);">
+            <div class="box-title"><span class="badge badge-green">Answer</span> 最终答案</div>
+            <div class="box-desc">基于通过审查的证据输出最终答案</div>
+            <ul class="box-items">
+              <li>引用具体规则条文</li>
+              <li>标注置信度</li>
+              <li>verdict = WARN 时标注不确定点</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>二、审查机制设计</h2>
+
+    <h3>2.1 审查层级</h3>
+
+    <table>
+      <thead>
+        <tr><th>层级</th><th>触发时机</th><th>审查内容</th><th>失败处理</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="ok">Schema 校验</span></td>
+          <td>每个 subagent 输出后</td>
+          <td>输出是否符合预定义 JSON Schema？字段是否完整？</td>
+          <td>要求 subagent 重新输出</td>
+        </tr>
+        <tr>
+          <td><span class="ok">内容审查</span></td>
+          <td>查询类 subagent 输出后</td>
+          <td>牌面信息是否完整？规则来源是否为本地文件？</td>
+          <td>标记缺失，进入下一步或 BLOCK</td>
+        </tr>
+        <tr>
+          <td><span class="ok">引用审查</span></td>
+          <td>analyzer 输出后</td>
+          <td>结论中的每个引用是否都能在 Evidence 中找到？</td>
+          <td>要求 analyzer 补充引用或修正</td>
+        </tr>
+        <tr>
+          <td><span class="ok">迭代审查</span></td>
+          <td>analyzer 输出后</td>
+          <td>needs_more_evidence 是否非空？是否需要补充查询？</td>
+          <td>非空则回到 Step 2 补充查询（最多 3 轮）</td>
+        </tr>
+        <tr>
+          <td><span class="ok">独立验证</span></td>
+          <td>checker subagent</td>
+          <td>不看推理过程，只看证据和结论是否匹配</td>
+          <td>verdict = BLOCK 时禁止输出结论</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>2.2 审查伪代码</h3>
+
+    <div class="packet-box">
+      <span class="comment"># 每次 subagent 调用后的标准审查流程</span><br><br>
+      <span class="key">function</span> <span class="type">review_subagent_output</span>(output, step_name):<br>
+      &nbsp;&nbsp;<span class="comment"># 1. Schema 校验（强制）</span><br>
+      &nbsp;&nbsp;<span class="key">if</span> <span class="type">not</span> validate_schema(output, SCHEMAS[step_name]):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;missing = find_missing_fields(output, SCHEMAS[step_name])<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">return</span> {status: <span class="str">"RETRY"</span>, reason: <span class="str">"Schema 校验失败，缺少字段: "</span> + missing}<br><br>
+      &nbsp;&nbsp;<span class="comment"># 2. 内容审查（按步骤类型）</span><br>
+      &nbsp;&nbsp;<span class="key">if</span> step_name == <span class="str">"card-lookup"</span>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">if</span> <span class="type">not</span> output.oracle_text:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">return</span> {status: <span class="str">"WARN"</span>, reason: <span class="str">"Oracle 文本为空"</span>}<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">if</span> <span class="type">not</span> output.scryfall_id:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">return</span> {status: <span class="str">"WARN"</span>, reason: <span class="str">"缺少 scryfall_id"</span>}<br><br>
+      &nbsp;&nbsp;<span class="key">if</span> step_name == <span class="str">"rule-lookup"</span>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">for</span> match <span class="key">in</span> output.matches:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">if</span> <span class="type">not</span> match.source_file.startswith(<span class="str">"raw/"</span>):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">return</span> {status: <span class="str">"BLOCK"</span>, reason: <span class="str">"规则来源不是本地文件"</span>}<br><br>
+      &nbsp;&nbsp;<span class="key">if</span> step_name == <span class="str">"interaction-analyzer"</span>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">for</span> rule <span class="key">in</span> output.cited_rules:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">if</span> rule <span class="type">not in</span> evidence.rule_numbers:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">return</span> {status: <span class="str">"RETRY"</span>, reason: <span class="str">"引用了未查询的规则: "</span> + rule}<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 3.1 迭代检查：是否需要补充证据</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">if</span> output.needs_more_evidence:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">if</span> iteration_count >= MAX_ITERATIONS:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">return</span> {status: <span class="str">"WARN"</span>, reason: <span class="str">"达到最大迭代次数，证据仍不完整"</span>}<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">return</span> {status: <span class="str">"ITERATE"</span>, missing: output.needs_more_evidence}<br><br>
+      &nbsp;&nbsp;<span class="comment"># 4. 通过</span><br>
+      &nbsp;&nbsp;<span class="key">return</span> {status: <span class="str">"PASS"</span>}<br><br>
+      <span class="comment"># 4. checker 独立验证</span><br>
+      <span class="key">function</span> <span class="type">checker_review</span>(evidence, analysis):<br>
+      &nbsp;&nbsp;card_ok = <span class="type">all</span>(c.oracle_text <span class="key">for</span> c <span class="key">in</span> evidence.cards)<br>
+      &nbsp;&nbsp;rule_ok = <span class="type">all</span>(m.source_file.startswith(<span class="str">"raw/"</span>) <span class="key">for</span> m <span class="key">in</span> evidence.rules)<br>
+      &nbsp;&nbsp;evidence_complete = <span class="type">len</span>(analysis.cited_rules) &lt;= <span class="type">len</span>(evidence.rules)<br>
+      &nbsp;&nbsp;<span class="key">return</span> {status: <span class="str">"PASS"</span> <span class="key">if</span> (card_ok <span class="key">and</span> rule_ok <span class="key">and</span> evidence_complete) <span class="key">else</span> <span class="str">"BLOCK"</span>}
+    </div>
+
+    <h2>三、Subagent 设计规范</h2>
+
+    <h3>3.1 核心约束</h3>
+
+    <div class="note-green">
+      <strong>每个 subagent 必须满足：</strong>
+    </div>
+
+    <div class="check-item"><span class="check-icon">OK</span><div><strong>上下文干净</strong> — prompt 只包含该步骤的输入数据和执行规范，不含其他步骤信息</div></div>
+    <div class="check-item"><span class="check-icon">OK</span><div><strong>单一职责</strong> — 一个 subagent 只做一件事，不可再分</div></div>
+    <div class="check-item"><span class="check-icon">OK</span><div><strong>输出稳定</strong> — 相同输入必须产生结构相同的输出（Schema 约束）</div></div>
+    <div class="check-item"><span class="check-icon">OK</span><div><strong>不共享状态</strong> — subagent 之间不保留上下文，只通过数据包通信</div></div>
+    <div class="check-item"><span class="check-icon">OK</span><div><strong>可审计</strong> — 每个 subagent 的输入和输出都可以独立检查</div></div>
+
+    <h3>3.2 Subagent 定义</h3>
+
+    <h4>query-decomposer</h4>
+    <table>
+      <tr><th style="width:120px">维度</th><th>定义</th></tr>
+      <tr><td>职责</td><td>把自然语言问题拆成结构化查询计划</td></tr>
+      <tr><td>输入</td><td>用户原始问题（纯文本）</td></tr>
+      <tr><td>输出 Schema</td><td><code>{cards: string[], rule_keywords: string[], question_type: string, needs_rulings: boolean}</code></td></tr>
+      <tr><td>工具</td><td>无（纯文本分析）</td></tr>
+      <tr><td>上下文大小</td><td>~200字（用户问题 + 拆分规则）</td></tr>
+      <tr><td>审查点</td><td>Schema 字段完整性</td></tr>
+    </table>
+
+    <h4>card-lookup</h4>
+    <table>
+      <tr><th style="width:120px">维度</th><th>定义</th></tr>
+      <tr><td>职责</td><td>查询单张牌的 Oracle 文本和翻译</td></tr>
+      <tr><td>输入</td><td>一个中文牌名</td></tr>
+      <tr><td>输出 Schema</td><td><code>{input_name, english_name, scryfall_id, oracle_text, mana_cost, type_line, power_toughness}</code></td></tr>
+      <tr><td>工具</td><td>Bash (name_translator.py, card_search.py)</td></tr>
+      <tr><td>上下文大小</td><td>~100字 + 一个牌名</td></tr>
+      <tr><td>审查点</td><td>oracle_text 非空、scryfall_id 存在</td></tr>
+    </table>
+
+    <h4>rule-lookup</h4>
+    <table>
+      <tr><th style="width:120px">维度</th><th>定义</th></tr>
+      <tr><td>职责</td><td>查询单个规则关键词的相关条文</td></tr>
+      <tr><td>输入</td><td>一个规则关键词或编号</td></tr>
+      <tr><td>输出 Schema</td><td><code>{keyword: string, matches: [{rule_number, rule_text, source_file}]}</code></td></tr>
+      <tr><td>工具</td><td>Grep, Read</td></tr>
+      <tr><td>上下文大小</td><td>~100字 + 一个关键词</td></tr>
+      <tr><td>审查点</td><td>source_file 必须以 raw/ 开头</td></tr>
+    </table>
+
+    <h4>interaction-analyzer</h4>
+    <table>
+      <tr><th style="width:120px">维度</th><th>定义</th></tr>
+      <tr><td>职责</td><td>基于证据包做深度解析</td></tr>
+      <tr><td>输入</td><td>Evidence 包（所有查询结果）</td></tr>
+      <tr><td>输出 Schema</td><td><code>{conclusion, reasoning, confidence, cited_rules, cited_cards, needs_more_evidence?}</code></td></tr>
+      <tr><td>工具</td><td>无（纯推理）</td></tr>
+      <tr><td>上下文大小</td><td>~500字 + 证据包</td></tr>
+      <tr><td>审查点</td><td>每个 cited_rules 必须在 Evidence 中存在</td></tr>
+    </table>
+
+    <h4>checker</h4>
+    <table>
+      <tr><th style="width:120px">维度</th><th>定义</th></tr>
+      <tr><td>职责</td><td>独立验证证据和结论</td></tr>
+      <tr><td>输入</td><td>Evidence + Analysis</td></tr>
+      <tr><td>输出 Schema</td><td><code>{status: "PASS"|"WARN"|"BLOCK", card_check, rule_check, evidence_check, notes}</code></td></tr>
+      <tr><td>工具</td><td>无</td></tr>
+      <tr><td>上下文大小</td><td>~200字 + 证据 + 结论</td></tr>
+      <tr><td>审查点</td><td>不看推理过程，只看证据和结论的匹配度</td></tr>
+    </table>
+
+    <h2>四、数据包 Schema</h2>
+
+    <div class="packet-box">
+      <span class="comment"># Step 1 输出: QueryPlan</span><br>
+      {<br>
+      &nbsp;&nbsp;<span class="key">"cards"</span>: [<span class="str">"闪电击"</span>, <span class="str">"幽灵选手"</span>],			<span class="comment">// 需要查询的中文牌名列表</span><br>
+      &nbsp;&nbsp;<span class="key">"rule_keywords"</span>: [<span class="str">"protection"</span>, <span class="str">"702.16"</span>],	<span class="comment">// 需要查询的规则关键词/编号</span><br>
+      &nbsp;&nbsp;<span class="key">"question_type"</span>: <span class="str">"interaction"</span>,			<span class="comment">// interaction | rule | policy | format</span><br>
+      &nbsp;&nbsp;<span class="key">"needs_rulings"</span>: <span class="type">false</span>,					<span class="comment">// 是否需要查 WotC 裁定</span><br>
+      &nbsp;&nbsp;<span class="key">"needs_strategy"</span>: <span class="type">false</span>				<span class="comment">// 是否需要查策略文档</span><br>
+      }<br><br>
+
+      <span class="comment"># Step 2 输出: Evidence (多个 card-lookup + rule-lookup 的结果合并)</span><br>
+      {<br>
+      &nbsp;&nbsp;<span class="key">"cards"</span>: [<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;{<span class="key">"input_name"</span>: <span class="str">"闪电击"</span>, <span class="key">"english_name"</span>: <span class="str">"Lightning Bolt"</span>, <span class="key">"oracle_text"</span>: <span class="str">"..."</span>, <span class="key">"scryfall_id"</span>: <span class="str">"..."</span>},<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;{<span class="key">"input_name"</span>: <span class="str">"幽灵选手"</span>, <span class="key">"english_name"</span>: <span class="str">"Burrenton Forge-Tender"</span>, <span class="key">"oracle_text"</span>: <span class="str">"..."</span>, <span class="key">"scryfall_id"</span>: <span class="str">"..."</span>}<br>
+      &nbsp;&nbsp;],<br>
+      &nbsp;&nbsp;<span class="key">"rules"</span>: [<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;{<span class="key">"keyword"</span>: <span class="str">"protection"</span>, <span class="key">"matches"</span>: [{<span class="key">"rule_number"</span>: <span class="str">"702.16a"</span>, <span class="key">"rule_text"</span>: <span class="str">"..."</span>, <span class="key">"source_file"</span>: <span class="str">"raw/cr/7.md"</span>}]}<br>
+      &nbsp;&nbsp;],<br>
+      &nbsp;&nbsp;<span class="key">"rulings"</span>: []								<span class="comment">// ruling-lookup 的结果（如有）</span><br>
+      }<br><br>
+
+      <span class="comment"># Step 3 输出: Analysis</span><br>
+      {<br>
+      &nbsp;&nbsp;<span class="key">"conclusion"</span>: <span class="str">"闪电击无法对幽灵选手造成伤害"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"reasoning"</span>: <span class="str">"因为保护规则 702.16a 规定..."</span>,<br>
+      &nbsp;&nbsp;<span class="key">"confidence"</span>: <span class="str">"certain"</span>,				<span class="comment">// certain | likely | uncertain</span><br>
+      &nbsp;&nbsp;<span class="key">"cited_rules"</span>: [<span class="str">"702.16a"</span>, <span class="str">"702.16b"</span>],	<span class="comment">// 引用的规则编号</span><br>
+      &nbsp;&nbsp;<span class="key">"cited_cards"</span>: [<span class="str">"Lightning Bolt"</span>, <span class="str">"Burrenton Forge-Tender"</span>],<br>
+      &nbsp;&nbsp;<span class="key">"needs_more_evidence"</span>: <span class="type">null</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// 为 null 表示证据充足，否则列出需要补充的关键词</span><br>
+      }<br><br>
+
+      <span class="comment"># Step 4 输出: Verdict</span><br>
+      {<br>
+      &nbsp;&nbsp;<span class="key">"status"</span>: <span class="str">"PASS"</span>,						<span class="comment">// PASS | WARN | BLOCK</span><br>
+      &nbsp;&nbsp;<span class="key">"card_check"</span>: <span class="str">"PASS"</span>,					<span class="comment">// 牌面信息完整性</span><br>
+      &nbsp;&nbsp;<span class="key">"rule_check"</span>: <span class="str">"PASS"</span>,					<span class="comment">// 规则来源可靠性</span><br>
+      &nbsp;&nbsp;<span class="key">"evidence_check"</span>: <span class="str">"PASS"</span>,				<span class="comment">// 证据链完整性</span><br>
+      &nbsp;&nbsp;<span class="key">"notes"</span>: <span class="str">"所有检查通过"</span><br>
+      }
+    </div>
+
+    <h2>五、与旧架构的对比</h2>
+
+    <table>
+      <thead>
+        <tr><th>维度</th><th>旧 magic-skill（Python pipeline）</th><th>v3 旧架构（大 Agent）</th><th>v3.1 原子化工作流</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>执行方式</td>
+          <td>Python 脚本串行执行</td>
+          <td>Claude Code 调用一个大 Agent 做所有事</td>
+          <td class="ok">Claude Code 调度多个原子 subagent</td>
+        </tr>
+        <tr>
+          <td>Agent 粒度</td>
+          <td>函数级</td>
+          <td>一个大 Agent（上下文 ~2000字）</td>
+          <td class="ok">原子级（每个上下文 ~100-500字）</td>
+        </tr>
+        <tr>
+          <td>上下文污染</td>
+          <td>无（代码分离）</td>
+          <td>严重（一个 prompt 包含所有步骤）</td>
+          <td class="ok">零污染（每个 subagent 只看当前输入）</td>
+        </tr>
+        <tr>
+          <td>并行能力</td>
+          <td>需自己实现</td>
+          <td>Agent 内部串行</td>
+          <td class="ok">Claude Code 天然并行调度</td>
+        </tr>
+        <tr>
+          <td>输出稳定性</td>
+          <td>高（代码确定性）</td>
+          <td>低（上下文太重，输出不可控）</td>
+          <td class="ok">高（上下文最小 + Schema 约束）</td>
+        </tr>
+        <tr>
+          <td>可审计</td>
+          <td>日志文件</td>
+          <td>只能看最终输出</td>
+          <td class="ok">每步中间产物可独立检查</td>
+        </tr>
+        <tr>
+          <td>失败定位</td>
+          <td>堆栈追踪</td>
+          <td>全量重试</td>
+          <td class="ok">步骤级定位 + 自动重试</td>
+        </tr>
+        <tr>
+          <td>审查机制</td>
+          <td>无</td>
+          <td>最终 checker</td>
+          <td class="ok">每步都有 Schema + 内容审查</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>六、完整示例</h2>
+
+    <h3>问题："闪电击能指定有保护的生物吗？"</h3>
+
+    <div class="packet-box">
+      <span class="comment"># === Step 1: query-decomposer ===</span><br>
+      Input: "闪电击能指定有保护的生物吗？"<br>
+      Output: {<br>
+      &nbsp;&nbsp;<span class="key">cards"</span>: [<span class="str">"闪电击"</span>],<br>
+      &nbsp;&nbsp;<span class="key">"rule_keywords"</span>: [<span class="str">"protection"</span>, <span class="str">"target"</span>, <span class="str">"702.16"</span>],<br>
+      &nbsp;&nbsp;<span class="key">"question_type"</span>: <span class="str">"rule"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"needs_rulings"</span>: <span class="type">false</span><br>
+      }<br>
+      Review: Schema 校验 PASS<br><br>
+
+      <span class="comment"># === Step 2: 并行查询 ===</span><br><br>
+
+      <span class="comment"># card-lookup("闪电击")</span><br>
+      Output: {<br>
+      &nbsp;&nbsp;<span class="key">"input_name"</span>: <span class="str">"闪电击"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"english_name"</span>: <span class="str">"Lightning Bolt"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"oracle_text"</span>: <span class="str">"Lightning Bolt deals 3 damage to any target."</span>,<br>
+      &nbsp;&nbsp;<span class="key">"scryfall_id"</span>: <span class="str">"..."</span><br>
+      }<br>
+      Review: oracle_text 非空 PASS, scryfall_id 存在 PASS<br><br>
+
+      <span class="comment"># rule-lookup("protection")</span><br>
+      Output: {<br>
+      &nbsp;&nbsp;<span class="key">"keyword"</span>: <span class="str">"protection"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"matches"</span>: [<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;{<span class="key">"rule_number"</span>: <span class="str">"702.16a"</span>, <span class="key">"rule_text"</span>: <span class="str">"..."</span>, <span class="key">"source_file"</span>: <span class="str">"raw/cr/7.md"</span>},<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;{<span class="key">"rule_number"</span>: <span class="str">"702.16b"</span>, <span class="key">"rule_text"</span>: <span class="str">"..."</span>, <span class="key">"source_file"</span>: <span class="str">"raw/cr/7.md"</span>}<br>
+      &nbsp;&nbsp;]<br>
+      }<br>
+      Review: source_file 以 raw/ 开头 PASS<br><br>
+
+      <span class="comment"># rule-lookup("target")</span><br>
+      Output: {<span class="key">"keyword"</span>: <span class="str">"target"</span>, <span class="key">"matches"</span>: [...]}<br>
+      Review: PASS<br><br>
+
+      <span class="comment"># === 合并 Evidence ===</span><br>
+      Evidence = {cards: [card_info], rules: [rule1, rule2, rule3]}<br><br>
+
+      <span class="comment"># === Step 3: interaction-analyzer ===</span><br>
+      Input: Evidence<br>
+      Output: {<br>
+      &nbsp;&nbsp;<span class="key">"conclusion"</span>: <span class="str">"不能。保护规则阻止了闪电击指定该生物。"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"reasoning"</span>: <span class="str">"根据 702.16b..."</span>,<br>
+      &nbsp;&nbsp;<span class="key">"confidence"</span>: <span class="str">"certain"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"cited_rules"</span>: [<span class="str">"702.16b"</span>],<br>
+      &nbsp;&nbsp;<span class="key">"cited_cards"</span>: [<span class="str">"Lightning Bolt"</span>]<br>
+      }<br>
+      Review: cited_rules ["702.16b"] 在 Evidence 中存在 PASS<br><br>
+
+      <span class="comment"># === Step 4: checker ===</span><br>
+      Input: Evidence + Analysis<br>
+      Output: {<br>
+      &nbsp;&nbsp;<span class="key">"status"</span>: <span class="str">"PASS"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"card_check"</span>: <span class="str">"PASS"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"rule_check"</span>: <span class="str">"PASS"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"evidence_check"</span>: <span class="str">"PASS"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"notes"</span>: <span class="str">"所有检查通过"</span><br>
+      }<br><br>
+
+      <span class="comment"># === 最终答案 ===</span><br>
+      "不能。根据保护规则 702.16b，..."
+    </div>
+
+    <h3>迭代示例：analyzer 发现证据不足</h3>
+
+    <div class="note">
+      <strong>场景：</strong>AP操控蔽影矛，NAP操控有保护的生物。蔽影矛能否装备上去？
+    </div>
+
+    <div class="packet-box">
+      <span class="comment"># === Step 3 第一轮: interaction-analyzer ===</span><br>
+      Input: Evidence {cards: [蔽影矛, 有保护的生物], rules: [保护规则 702.16]}<br>
+      Output: {<br>
+      &nbsp;&nbsp;<span class="key">"conclusion"</span>: <span class="str">"需要进一步分析启动式异能和保护的交互"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"reasoning"</span>: <span class="str">"保护规则阻止了指定，但蔽影矛是启动式异能..."</span>,<br>
+      &nbsp;&nbsp;<span class="key">"confidence"</span>: <span class="str">"uncertain"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"cited_rules"</span>: [<span class="str">"702.16b"</span>],<br>
+      &nbsp;&nbsp;<span class="key">"cited_cards"</span>: [<span class="str">"Lightning Greaves"</span>],<br>
+      &nbsp;&nbsp;<span class="key">"needs_more_evidence"</span>: {			<span class="comment">// analyzer 主动请求补充</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"rules"</span>: [<span class="str">"activated abilities"</span>, <span class="str">"equip"</span>, <span class="str">"602.2b"</span>],	<span class="comment">// 需要查的新关键词</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"reason"</span>: <span class="str">"需要确认启动式异能的目标选择是否受保护影响"</span><br>
+      &nbsp;&nbsp;}<br>
+      }<br>
+      Review: needs_more_evidence 非空 → <span class="ok">ITERATE</span>（第 1/3 轮）<br><br>
+
+      <span class="comment"># === 回到 Step 2: 补充查询 ===</span><br>
+      # rule-lookup("activated abilities") → 匹配 602.x 规则<br>
+      # rule-lookup("equip") → 匹配 702.6a<br>
+      # rule-lookup("602.2b") → 目标选择规则<br>
+      Review: 全部 PASS<br><br>
+
+      <span class="comment"># === 合并新 Evidence ===</span><br>
+      Evidence = {cards: [...], rules: [保护, 启动式异能, 装备, 602.2b]}<br><br>
+
+      <span class="comment"># === Step 3 第二轮: interaction-analyzer（重新调用）===</span><br>
+      Input: 新 Evidence（包含补充的规则）<br>
+      Output: {<br>
+      &nbsp;&nbsp;<span class="key">"conclusion"</span>: <span class="str">"不能。保护规则阻止了蔽影矛的启动式异能指定该生物为目标。"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"reasoning"</span>: <span class="str">"根据 602.2b，启动式异能需要选择目标时... 702.16b 规定保护阻止指定..."</span>,<br>
+      &nbsp;&nbsp;<span class="key">"confidence"</span>: <span class="str">"certain"</span>,<br>
+      &nbsp;&nbsp;<span class="key">"cited_rules"</span>: [<span class="str">"602.2b"</span>, <span class="str">"702.16b"</span>, <span class="str">"702.6a"</span>],<br>
+      &nbsp;&nbsp;<span class="key">"cited_cards"</span>: [<span class="str">"Lightning Greaves"</span>],<br>
+      &nbsp;&nbsp;<span class="key">"needs_more_evidence"</span>: <span class="type">null</span>			<span class="comment">// 证据充足，无需补充</span><br>
+      }<br>
+      Review: needs_more_evidence 为 null → <span class="ok">PASS</span><br><br>
+
+      <span class="comment"># === 继续 Step 4: checker ===</span><br>
+      ...
+    </div>
+
+    <h2>七、文件结构</h2>
+
+    <div class="packet-box">
+      new_magic_skill/<br>
+      |-- <span class="key">.claude/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># Claude Code 配置</span><br>
+      |&nbsp;&nbsp;&nbsp;|-- <span class="key">skills/</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;|-- <span class="key">mtg-judge-zh/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 规则裁判 skill（定义工作流调度）</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;`-- <span class="key">SKILL.md</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 触发条件 + 工作流定义 + 审查规则</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;|-- <span class="key">mtg-wiki/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 牌张查询 skill</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;`-- <span class="key">SKILL.md</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;`-- <span class="key">modern-breaker/</span>&nbsp;<span class="comment"># 摩登环境 skill</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-- <span class="key">SKILL.md</span><br>
+      |&nbsp;&nbsp;&nbsp;|-- <span class="key">agents/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 原子化 Subagent 定义</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;|-- <span class="key">query-decomposer.md</span>&nbsp;<span class="comment"># 题目拆分</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;|-- <span class="key">card-lookup.md</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 单张牌查询</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;|-- <span class="key">rule-lookup.md</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 单条规则查询</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;|-- <span class="key">ruling-lookup.md</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 裁定查询</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;|-- <span class="key">interaction-analyzer.md</span> <span class="comment"># 深度解析</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;|-- <span class="key">mtg-wiki.md</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 策略/知识查询</span><br>
+      |&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;`-- <span class="key">checker.md</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 独立验证</span><br>
+      |&nbsp;&nbsp;&nbsp;`-- <span class="key">schemas/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># JSON Schema 定义（用于审查）</span><br>
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-- <span class="key">query-plan.json</span><br>
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-- <span class="key">card-info.json</span><br>
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-- <span class="key">rule-info.json</span><br>
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-- <span class="key">analysis.json</span><br>
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-- <span class="key">verdict.json</span><br>
+      |<br>
+      |-- <span class="key">raw/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 原始资料</span><br>
+      |&nbsp;&nbsp;&nbsp;|-- <span class="key">cr/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 完整规则 CR</span><br>
+      |&nbsp;&nbsp;&nbsp;|-- <span class="key">mtr/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 比赛规则</span><br>
+      |&nbsp;&nbsp;&nbsp;|-- <span class="key">ipg/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 违规处理方针</span><br>
+      |&nbsp;&nbsp;&nbsp;`-- <span class="key">tools/mtg_wiki/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 本地工具链（保留）</span><br>
+      |<br>
+      |-- <span class="key">wiki/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 知识库</span><br>
+      |-- <span class="key">tests/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 回归测试</span><br>
+      |&nbsp;&nbsp;&nbsp;|-- <span class="key">questions.md</span><br>
+      |&nbsp;&nbsp;&nbsp;|-- <span class="key">answers.md</span><br>
+      |&nbsp;&nbsp;&nbsp;`-- <span class="key">logs/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 测试记录（含每步 subagent 输出）</span><br>
+      |-- <span class="key">output/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 生成物</span><br>
+      `-- <span class="key">architecture-v3.html</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># 本文件</span>
+    </div>
+
+    <h2>八、实施路径</h2>
+
+    <table>
+      <thead>
+        <tr><th>阶段</th><th>内容</th><th>产出</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Phase 1</td>
+          <td>定义 JSON Schema + 创建原子 subagent</td>
+          <td>query-decomposer, card-lookup, rule-lookup</td>
+        </tr>
+        <tr>
+          <td>Phase 2</td>
+          <td>集成审查机制 + 并行调度</td>
+          <td>完整工作流跑通一个测试用例</td>
+        </tr>
+        <tr>
+          <td>Phase 3</td>
+          <td>加入 interaction-analyzer + checker</td>
+          <td>端到端工作流</td>
+        </tr>
+        <tr>
+          <td>Phase 4</td>
+          <td>回归测试对比（大 Agent vs 原子 Agent）</td>
+          <td>稳定性、可审计性数据</td>
+        </tr>
+        <tr>
+          <td>Phase 5</td>
+          <td>删除旧大 Agent 定义</td>
+          <td>清理</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note-green">
+      <strong>设计完成标准：</strong>拿到一个规则问题，Claude Code 能自动拆解为原子任务，每个 subagent 的输出都经过 Schema 校验和内容审查，最终 checker 给出 verdict。整个过程的每一步中间产物都可以单独拿出来检查。
+    </div>
+
+  </div>
+</body>
+</html>

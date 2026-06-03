@@ -2,6 +2,23 @@
 
 按时间顺序记录的 Ingest、Query 和 Lint 操作。
 
+## [2026-05-20] ingest | WPN 零售商方针
+
+来源 URL https://wpn.wizards.com/zh-Hans/wpn-retailer-policies#PromosProducts，因中文页面 JS 动态渲染限制，实际摄入英文版完整文本：
+- 保存源文件：raw/wpn_retailer_policies.md
+- 新建来源摘要：wiki/sources/2026-05-20-wpn-retailer-policies.md
+- 新建概念页：wiki/concepts/wpn-retailer-policies.md（含产品发布规则、促销物品管理、店家义务、营销材料政策）
+- 更新索引：wiki/index.md
+
+## [2026-05-01] ingest | 摩登环境破解报告生成与策略分支 Wiki 构建
+
+基于 output/modern_tournament_breaker.html 数据源，构建策略分支摩登专题：
+- 新建决策树 3 篇：modern-meta-selection（Meta 套牌选择）、modern-sideboard（备牌决策）、modern-anti-energy（对抗 Boros Energy）
+- 新建环境快照 1 篇：meta-snapshots/2026-05-01-modern（含 Meta 分布、食物链、备牌趋势）
+- 新建套牌分析 3 篇：decks/boros-energy、decks/affinity、decks/jeskai-blink（含机制拆解、示例牌表、备牌局策略）
+- 新建单卡评估 1 篇：card-evaluations/modern-2026-05（主牌威胁 + 备牌互动，含携带量建议）
+- 更新索引：strategy/index.md、formats/modern.md
+
 ## [2026-04-27] ingest | MTR 2026-02-27 核对与补充
 
 核对 raw/MTG_MTR_2026_Feb27_EN.pdf 与现有 raw/mtr/ 文件：
@@ -441,4 +458,32 @@
 
 ### 当前 Wiki 总计
 - 来源页 9 篇、实体页 4 篇、概念页 134 篇、综合页 5 篇
+
+## [2026-05-03] synthesis | Tameshi Belcher（无地蓝炮）完整重写
+
+按 `wiki/_templates/deck-analysis.md` 模板（10 节 + 关联 + 检查清单）重写 Tameshi Belcher 分析。原版本仅 187 行、含多项卡文错误（Tameshi 费用、Hydroelectric Specimen 类型 / 文本、Sea Gate cmc）+ 漏写 Suppression Ray + matchup 胜率与实测数据矛盾，本次彻底返工。
+
+### 重构原因（前置任务问题清单）
+1. **结构不全**：缺 4 / 5 / 8 / 9 / 10 节；与同期合规版本 azorius-control（392 行）相距过远
+2. **卡牌文本错误**：5 张关键牌（Tameshi、Hydroelectric Specimen、Sea Gate Restoration、Sink into Stupor、Suppression Ray）正反面文本与 Scryfall 不一致
+3. **核心牌缺漏**：100% 出现 4x 的 Suppression Ray // Orderly Plaza（唯一稳定白源）完全未提
+4. **Matchup 数据捏造**：旧报告 vs Boros "稍劣"、vs Affinity "均势"、vs Amulet "微优"——matchup_data_v2.json 实测分别为 67% / 10% / 17%，方向全反
+
+### 修正后核心数据
+- Meta 占比：**2.27%** Tier 3（来源 modern_meta_report 2026-05-01）
+- 颜色身份：**蓝白（Azorius）**（旧版本误标"单蓝"）
+- 实测胜率：Boros 67%（12 局）/ Affinity 10%（10 局）/ Jeskai Blink 67%（15 局）/ Amulet Titan 17%（6 局）/ Domain Aggro 50%（6 局）/ Ruby Storm 60%（5 局）等共 12 个对局
+- 关键回合修正：旧"无干扰下 T3 lethal"改为"T3 仅 nut hand 成立，典型 kill T4-T5"
+
+### 新增页面
+- **综合页 1 篇**：[[branches/strategy/decks/tameshi-belcher|Tameshi Belcher（无地蓝炮）套牌分析]]（954 行）
+- **更新 `index.md`** 收录至综合页栏
+
+### 校对工具链
+- Scryfall API（curl）核对 17 张核心牌 + 33 张关联牌正反面文本
+- mtg-judge-zh agent 路径校对 7 条 CR 互动（CR 712.8a / 117.6 / 603.1 / 603.7 / 702.62a / 702.127a / 115.7）
+- mtgch API 关联牌名待二次校对（第 10.4 节列出 33 张）
+
+### 当前 Wiki 总计
+- 来源页 9 篇、实体页 4 篇、概念页 134 篇、综合页 6 篇
 
