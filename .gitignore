@@ -16,6 +16,7 @@ skill/mtg-wiki/*
 
 raw/tools/mtg_wiki/cache/
 raw/tools/mtg_wiki/data/
+raw/data/
 
 *.tmp
 *.log
