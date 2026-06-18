@@ -1,0 +1,12 @@
+# Scryfall bulk & large generated sources are NEVER committed.
+# They are downloaded/generated in CI (cached) or by a maintainer locally.
+oracle-cards*.json
+all-cards*.json
+default-cards*.json
+*-bulk-*.json
+*.bulk.json
+
+# Keep the small distilled CN<->EN official name index (single source of truth,
+# maintainer-refreshed via PR) and this ignore file itself.
+!.gitignore
+!cn_name_index.json
