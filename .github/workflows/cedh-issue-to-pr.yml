@@ -1,0 +1,61 @@
+name: cedh-issue-to-pr
+
+# Turns a "cedh-block" Issue Form submission into a content-block PR.
+# Runs on the `issues` event in the BASE repo (NOT a fork context), so secrets
+# (the App token) are available. The created PR then goes through the normal
+# cedh-block-validate CI + maintainer review.
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+permissions:
+  contents: read   # the App token (not GITHUB_TOKEN) does the writing
+
+jobs:
+  render:
+    # double gate: must carry the cedh-block label (auto-applied by the form)
+    if: contains(join(github.event.issue.labels.*.name, ','), 'cedh-block')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Parse issue form
+        id: parse
+        uses: stefanbuck/github-issue-parser@v3
+        with:
+          template-path: .github/ISSUE_TEMPLATE/cedh-block.yml
+
+      # Pass parsed JSON via a file (NOT inline ${{ }}) to avoid command injection.
+      - name: Write parsed JSON to file
+        env:
+          ISSUE_JSON: ${{ steps.parse.outputs.jsonString }}
+        run: printf '%s' "$ISSUE_JSON" > issue.json
+
+      - name: Render content block
+        id: render
+        run: |
+          set -euo pipefail
+          FILE="$(python3 raw/tools/mtg_wiki/render_cedh_issue.py issue.json)"
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          rm -f issue.json
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          # App token (NOT default GITHUB_TOKEN) so the PR triggers the
+          # cedh-block-validate workflow (GITHUB_TOKEN-created PRs do not).
+          token: ${{ secrets.CEDH_BOT_TOKEN }}
+          branch: cedh-issue-${{ github.event.issue.number }}
+          base: main
+          commit-message: "cedh: add block from #${{ github.event.issue.number }}"
+          title: "cedh-block: ${{ steps.render.outputs.file }} (closes #${{ github.event.issue.number }})"
+          body: |
+            Auto-rendered from issue #${{ github.event.issue.number }} via the cedh-block form.
+            CI will run format + forced card verification. Maintainer review required before merge.
+          labels: cedh-block
+          add-paths: |
+            wiki/branches/strategy/cedh/**

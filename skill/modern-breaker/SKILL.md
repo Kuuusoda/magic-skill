@@ -1,3 +1,8 @@
+---
+name: modern-breaker
+description: 万智牌「摩登（Modern）」赛制竞技策略分析。用于摩登 meta 环境查询、套牌运作分析、对局优劣与备牌建议、环境突破口分析、套牌选择推荐。当用户明确询问摩登赛制的竞技策略/套牌/meta 时触发。边界：规则判定与牌张互动让渡给 mtg-judge-zh；通用牌张查询、其他赛制及非竞技问题让渡给 mtg-wiki；本 skill 仅基于 wiki/branches/strategy/ 已记录的策略资料作答，不编造 meta 数据。
+---
+
 # modern-breaker — 摩登环境分析 Skill
 
 ## 触发条件
