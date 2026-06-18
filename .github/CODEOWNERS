@@ -1,0 +1,23 @@
+# CODEOWNERS — 维护者级路径需指定评审人审批后方可合并。
+# 社区内容块（cedh/**）走 CI + 普通评审；以下路径属"维护者级"，须 owner 批准。
+#
+# 用法：把 @your-github-handle 换成真实维护者/团队。占位待维护者填写。
+
+# 入口与编排（不走社区内容块 PR 流程）
+/skill/                         @MAINTAINER
+/wiki/branches/strategy/cedh/_templates/   @MAINTAINER
+
+# 通用知识层（P5：社区内容块 PR 禁止改动；改这里须维护者）
+/wiki/concepts/                 @MAINTAINER
+/wiki/entities/                 @MAINTAINER
+/wiki/sources/                  @MAINTAINER
+/wiki/synthesis/                @MAINTAINER
+
+# 治理与工具（高影响）
+/CONSTITUTION.md                @MAINTAINER
+/.github/                       @MAINTAINER
+/raw/tools/                     @MAINTAINER
+/raw/data/cn_name_index.json    @MAINTAINER
+
+# 共享模板
+/wiki/branches/strategy/_templates/   @MAINTAINER
