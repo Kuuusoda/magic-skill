@@ -507,3 +507,174 @@
 ### 当前 Wiki 总计
 - 来源页 9 篇、实体页 4 篇、概念页 134 篇、综合页 6 篇
 
+
+## [2026-06-17] governance | MTG skill 提交规范 v1.0 定稿
+- 新增 `skill/CONTRIBUTING-mtg-skill.md`(MTG skill 提交规范+模板)
+- 权威参照:opencode 官方 Agent Skills 规范 + mtg-wiki 正样板
+- 经 3 轮多视角校验(官方规范/样板一致性/可用性)收敛,三视角全部 approve
+
+## [2026-06-18] governance | MTG skill 体系架构 v1.0 定稿
+- 新增 `skill/ARCHITECTURE-mtg-skills.md`(全量 MTG skill 体系架构:三层+路由约定)
+- 自顶向下:盘点现状→设计分层→用架构倒逼出 cedh-breaker 规格(边界由架构定、内容由领域素材填)
+- 经 3 轮多视角校验(架构合理性/opencode机制/cedh倒逼)+ opencode debug 实测,收敛 approve
+- 关键实测:skills.paths 生效;modern-breaker 因缺 frontmatter 未加载(死 skill);opencode 无系统级 skill 优先级
+
+## [2026-06-18] lint | 修复 cEDH 概念页 4 处硬伤（凭官方 Oracle 文本核实）
+- cedh-combo-patterns.md：Kinnan 异能（编造→官方翻倍效应）、Hullbreaker 异能（编造→弹回手牌）、Kinnan 无限法术力 combo（3牌→2牌重写）、Breach 逃脱费用（表格修正）、Oracle 胜利条件（少于5张→X≥牌库数×2处）
+- cedh.md / cedh-pod-dynamics.md：座位胜率数学修正（45/43/38
+## [2026-06-18] lint | 修复 cEDH 概念页 4 处硬伤(凭官方 Oracle 文本核实)
+- cedh-combo-patterns.md: Kinnan 异能(编造→官方翻倍效应)、Hullbreaker 异能(编造→弹回手牌)、Kinnan 无限法术力 combo(3牌→2牌重写)、Breach 逃脱费用(表格修正)、Oracle 胜利条件(少于5张→X>=牌库数, 2处)
+- cedh.md / cedh-pod-dynamics.md: 座位胜率数学修正(45/43/38%%→27/25/22%%, 4人pod期望=25%%)
+- 官方文本来源: card_search.py 查证 Kinnan/Breach/Oracle/Hullbreaker
+- 新发现待修: cedh-combo-patterns.md:117 Ad Nauseam 异能描述疑似有误(后续处理)
+
+## [2026-06-18] lint | 修复 cEDH 组合技页剩余牌张硬伤（凭 card_search 官方 Oracle 核实）
+
+排查 cedh-combo-patterns.md 与 blue-farm-analysis.md 中 Oracle/Ad Nauseam/Isochron 章节，修复 4 类编造或失准的牌张描述：
+1. Ad Nauseam（cedh-combo-patterns.md:117）：编造的「支付生命将手牌放入战场」→ 官方「展示牌库顶牌置入手中，失去等同总MV的生命，可重复任意次」（实为抓牌引擎，非放入战场）
+2. Tainted Pact（同页表格+脆弱点；blue-farm:65）：编造的「放逐两张不同名地、放逐整库失去1/2生命」→ 官方「逐张放逐顶牌可选择不留手，直到留一张或放逐两张同名牌；无生命损失」；脆弱点改为「同名牌中断」
+3. Demonic Consultation（同页表格+步骤；blue-farm:64）：补官方「先放逐顶6张再展示放逐」机制
+4. Thassa's Oracle（同页表格+步骤；blue-farm:63）：胜利条件「检视数>库数/小于5」→ 官方「X(对蓝献忠)≥牌库张数」
+验证：card_search.py 查证 7 张卡（Ad Nauseam/Thassa's Oracle/Demonic Consultation/Tainted Pact/Isochron Scepter/Dramatic Reversal/Angel's Grace/Phyrexian Unlife）；Grep 确认旧表述无残留。Isochron Scepter、Dramatic Reversal 原描述准确，未改。
+
+## [2026-06-18] 落地 | 复活 modern-breaker + 建 cEDH 内容块骨架与模板
+
+第1步（复活 modern-breaker）：给 skill/modern-breaker/SKILL.md 补合法 frontmatter（name: modern-breaker + description 含触发场景与让渡边界）。`opencode debug skill` 验证：modern-breaker 已出现在已加载列表（之前因缺 frontmatter 被过滤）。
+
+第2步（cEDH 内容块骨架，依 skill/ARCHITECTURE-cedh-skill.md 第二/七节）：
+- 建目录：wiki/branches/strategy/cedh/{decks,meta-snapshots,decision-trees,combos,card-evaluations}/（各含 .gitkeep）
+- 建 5 个模板：wiki/branches/strategy/_templates/cedh-{deck,meta,decision-tree,combo,card-eval}.md，含契约 frontmatter（block/archetype/commander/as_of）+ 按类型正文骨架 + 查证/双语/时效约束提示。
+- 均为**新增**，未触碰 wiki/concepts/ 通用层与 modern 现有目录（遵 P5/C7）。
+
+未执行（破坏性，待治理流程）：HANDOFF §4 决策中"把 modern 迁到 branches/strategy/modern/ 统一子目录"影响 ~19 文件 + modern-breaker 引用路径，且该决策尚未并入 ARCHITECTURE-cedh-skill.md，故暂缓，待提案/校验后再做。
+
+## [2026-06-18] 提案 | L2 公共能力层抽取（skill/_shared/mtg-common.md）提案收敛至 v0.3
+
+按用户"提案先行→多轮校验→全 approve 收敛"工作方式，产出 skill/PROPOSAL-l2-shared.md（未实施，纯文档）：
+- v0.1：显式 Read 引用方案（用户选定，不依赖 instructions 注入子 agent）。
+- 第 1 轮校验（3 reviewer 并行：架构/P6、opencode 机制、规范/迁移）：全 approve-with-changes。并入 v0.2 的关键修正：① 主通路改为"主 agent 编排时 Read L2 并注入子 agent prompt"（子 agent 不会自读）；② 层系统/Schema 在 L2 只持指针、事实留 L1 概念页/schema json（P6）；③ judge SKILL.md Step 内联 JSON 示例属工作流产出契约，保留不删；④ 接入清单补 agent/mtg-judge-zh.md、agent/mtg-wiki.md；⑤ 工具清单补 mtgch_name_index.py（6 个）；⑥ 固化"先建 L2 后删段"迁移 gate + 逐行删除清单 + 端到端冒烟测试；⑦ 本轮删除 opencode.json instructions 步骤；⑧ 统一相对路径 ./ 基准项目根。
+- 第 2 轮确认校验：机制 approve、规范/迁移 approve、架构 approve-with-changes（唯一项"schema 字段名清单仍是二源"）。v0.3 删除字段名清单 → 全部收敛。
+
+前置实测受阻记录：opencode.json instructions 是否注入子 agent，在本会话内 `opencode run` 报 Session not found（嵌套调用不可行），docs 未载，无法实测；故方案选定不依赖该机制（显式 Read + 主 agent 注入）。
+
+待用户放行后进入实施（建 mtg-common.md + 逐行删除清单 + 逐文件接入，属破坏性迁移，走 gate）。
+
+## [2026-06-18] 提案 | cEDH 协作架构并入两决策 + 多轮校验至 v0.3（遗留 1 项待用户裁决）
+
+按用户选项(b)：把 HANDOFF §4 的两个待定决策并入 skill/ARCHITECTURE-cedh-skill.md 并重新校验（未实施迁移，纯文档）。
+- v0.2 并入：决策③赛制子目录统一（cedh 已建 cedh/ 子目录；modern 同步迁 modern/ 子目录，破坏性）+ 决策④ 5 类内容块定稿；新增第九节 modern 迁移治理（实测影响清单 + gate + 回退）。
+- 第 1 轮校验（3 reviewer 并行：架构/宪法、迁移影响实测、cEDH 领域）→ 全 approve-with-changes。并入 v0.3 修正：
+  ① type 字段不再一律 decision-tree，按块映射（deck/meta→synthesis、combo/card-eval→concept、决策树→decision-tree）；
+  ② archetype 按 format 取枚举（cedh 域 Turbo/Stax/Midrange/Adaptive；modern 域 Aggro/Control/Combo/Midrange），新增 format 校验键；
+  ③ combo 块外延放宽含 stax lock；commander 加 pair_type 消 // 歧义；as_of 粒度到日；
+  ④ log.md 断链 lint 豁免固化（P7）；迁移影响订正 log.md 为 2 处（L40+L499）、补 decks 间裸 slug 互链说明、补孤儿 deck/撞名消歧；
+  ⑤ gate 增 ②.5 补 frontmatter 步骤（archetype 属领域判断非机械）+ ⑦ P10 多视角评审记录；
+  ⑥ 补"概念层 vs 块层"判据（概念=可复用模式无 as_of；块=具体实例带 as_of+sources），标注 concepts/cedh-deck-archetypes.md 时效数据越界为后续整改项。
+- 同步对齐 step2 已建的 5 个模板 frontmatter（cedh-deck type 改 synthesis、全加 format、deck 加 pair_type、combo 加 lock_type+锁信息段、as_of 改到日）。
+
+遗留唯一阻塞（8.1，需用户裁决，未擅改）：决策③ 与父文档 ARCHITECTURE-mtg-skills.md（v1.0 定稿）§5.1 第124行"cedh 与 modern 仅命名对称、不照搬结构/路径"直接冲突。选项 A=同步修订父文档（推荐）；选项 B=cedh 不迁 modern、放弃对称统一。用户拍板前第九节迁移不执行。
+
+## [2026-06-18] 决策 | cEDH 架构 8.1 父文档冲突裁决：选 B（不迁 modern）→ 文档 v0.4
+
+用户裁决 8.1：选 **B**——父文档 ARCHITECTURE-mtg-skills.md（v1.0 定稿）不动，cEDH 不迁移 modern。
+- decision③ 的"对称迁移"部分撤回；仅保留"cEDH 用自己的 branches/strategy/cedh/ 子目录 + 5 类内容块约定"。
+- modern 维持现状顶层目录，其引用路径/index.md/modern-breaker SKILL.md/agent/mtg-wiki.md 均不改。
+- 结果：本文档与父文档 §5.1"cedh 与 modern 仅命名对称、不照搬结构/路径"重新自洽，无需改 v1.0 定稿。
+- ARCHITECTURE-cedh-skill.md 更新至 v0.4：第九节 modern 迁移治理整体作废（保留实测数据备查）；§7 前置依赖删除"modern 迁子目录"条；§8 Q2 解为接受不对称、Q3 不适用；§5 archetype 校验简化为 format=cedh 单赛制（为未来 EDH 赛制预留 format 键）。
+- 5 个 cedh 模板 frontmatter 维持 v0.3 对齐（type 映射/format/pair_type/lock_type/as_of 到日），与 v0.4 一致。
+
+## [2026-06-18] 提案 | 6 项基础设施修复提案（R1-R6）收敛至 v0.2
+
+按用户"全部提出修复提案"，针对全景盘点暴露的 6 隐患产出 skill/PROPOSAL-repairs.md（纯文档，未实施）：
+- R1 删根级僵尸 SKILL.md（重复 mtg-wiki、含非法 triggers、实测未加载）
+- R2 修正"37k 本地数据库"夸大（实测：源数据 raw/data/oracle-cards-lite.json 与索引均不存在，card_search 实为 API-only）
+- R3 落地已收敛的 L2 提案（引用 v0.3，不另起）
+- R4 宪法 v0.1→校验定稿（走 P12，逐条收口 5 个 OQ + 新增 P13 IP/版权）
+- R5 modern 孤儿页(azorius-control/tameshi-belcher)入 index + affinity 裸链消歧
+- R6 概念页越界（cedh-deck-archetypes 等无源时效数据）
+
+第 1 轮校验（3 reviewer：架构/宪法、集成实测、领域数据）→ 全 approve-with-changes。并入 v0.2：
+- R2 修正需改文件清单：补最强夸大源 agent/mtg-judge-zh.md:293/312/350（O(1)本地库）、tameshi-belcher.md:916（点名不存在的离线卡库）、agent/mtg-wiki.md:7（"不查网络"）；并区分"运行时能力夸大(改)"vs"构建期溯源统计(留：concepts数据概览/synthesis/sources/log)"。
+- R4 覆盖宪法全部 5 个 OQ（含 OQ2 承诺扩展 lint_wiki_v2.py、OQ5 放置/命名结论）；P13 连锁要求全仓 P1-P12 引用同步更新纳入 gate。
+- R5 类别改 P7（撞名属链接解析非二源）；实测两页数据不可直接填表（azorius 无 Tier/占比、tameshi 占比 2.27% vs 2.1% 自相矛盾且不在快照），须先正本清源。
+- R6 核心改为"删/转定性为主，非盲迁"（无源数字迁 snapshot 仍无源）；锁单一权威方向（定义留 concepts、时效数据留 snapshot、互不重定义）；范围扩展普查 cedh-pod-dynamics/cedh-data-analysis 同类无源数字；与 §5.4 硬伤闸门协同；L25 Kinnan 标"需复核非确证"。
+
+待用户放行后按 R5→R1→R6→R2→R4→R3 顺序逐项实施（各项独立 gate、可回退、记 log）。
+
+## [2026-06-18] 回滚 | 撤回 cEDH 架构 + CONTRIBUTING 提交规范（改用 GitHub Fork+PR+CI 模型重做）
+
+用户澄清社区提交模型为「所有人通过 GitHub Fork + PR 提交，CI 自动校验」（贡献者无需本地装 opencode 或跑脚本）。原 cEDH 协作架构与 CONTRIBUTING 假设「技术型贡献者本地跑 card_search.py / opencode debug / 校验脚本」，与之冲突，故回滚。
+- 移除（均为未提交 untracked，已备份到 /var/folders/.../claudecode/rollback-2026-06-18/ 作回退预案，P11）：
+  - skill/ARCHITECTURE-cedh-skill.md（v0.4）
+  - skill/CONTRIBUTING-mtg-skill.md（v1.0）
+- 保留：wiki/branches/strategy/cedh/ 目录骨架 + _templates/cedh-*.md 5 个模板（内容块 frontmatter 契约，与提交方式无关，正是未来 CI 校验对象，新设计复用）；硬伤修复、modern-breaker frontmatter、PROPOSAL-l2-shared.md、PROPOSAL-repairs.md 均保留。
+- 遗留断引用待新设计处理：ARCHITECTURE-mtg-skills.md §六、PROPOSAL-repairs.md R4、PROPOSAL-cedh-breaker.md 中对 CONTRIBUTING 的引用。
+- 待办：按 GitHub Fork+PR+CI 重做 cEDH 协作架构 + 贡献规范（CI Actions 跑 frontmatter/路径/Schema 校验，PR 模板，维护者评审合并）。
+
+## [2026-06-18] 提案 | GitHub 社区贡献体系（Fork+PR+CI 强制查证）起草并并入第1轮评审 → v0.2
+
+回滚后按用户「Fork+PR+CI 强制查证」重做，产出 skill/PROPOSAL-github-contribution.md（取代回滚的 ARCHITECTURE-cedh-skill + CONTRIBUTING）。
+第1轮校验（3 reviewer：架构/宪法、CI/GitHub 机制、贡献者体验）→ 全 approve-with-changes。并入 v0.2 关键修正：
+- 强制查证降为「硬前置依赖：离线索引就绪后才具备」，不预先宣称（避免重蹈病灶5/R2 名实不符）；与 R2 改为单向消费（数据入库+P13版权由 R2 决定，本提案不承接）。
+- CI 机制补齐（reviewer 实测 GitHub Actions 坑）：① always-run gate 避免 paths+required check 死锁；② fork PR 权限模型（只读token/secrets不可用/cache隔离→default分支预热+miss回退/log隔离到合并后）；③ bulk 经 /bulk-data 拿 download_uri、cache key 用 updated_at；④ build_indices 加 ORACLE_CARDS_PATH env 覆盖；⑤ 格式校验是新写 lint 脚本非扩展 validation.py；⑥ 双面/拆分牌 // 特判。
+- 译名库改用 Scryfall all-cards 过滤 lang=zhs 离线抽取（单一源可复现，弃 mtgch+人工单点）。
+- 降门槛：Issue 表单转 PR（避免手写 YAML）；CI 逐张回填官方名+suggested change；cards_cited 可半填。
+- cards_cited 定位为「派生索引非第二事实源」+ 正文⊆cards_cited 一致性 warning + 按块强制度（穷举/子集/豁免）。
+- 查证分 error/warning（新牌 bulk 未收录走 warning+维护者放行 label）；PR 模板去重（只留人工信息）；P5 守卫改 allowlist；branch protection/CODEOWNERS；断引用三处+模板注释清理；交付物清单 8 项。
+待确认轮校验。
+
+## [2026-06-18] 提案 | GitHub 社区贡献体系 确认轮全 approve → 收敛 v0.3
+
+确认轮 3 reviewer（架构/宪法、CI 机制、贡献者体验）对 v0.2 全部 **approve**，blocking 全闭合。v0.3 顺手收口 4 个非阻塞精度项：① 译名源只用 Scryfall all-cards（default-cards 过滤 zhs 几乎为空）；② 新牌放行 label 属维护者动作（fork 贡献者无 write 权限加不了）；③ 区分"无索引=查证 job 跳过/neutral"与"新牌=warning"；④ CN↔EN 抽取脚本本提案自建，数据入库/版权归 R2+P13 单向。
+skill/PROPOSAL-github-contribution.md 已收敛 v0.3，待用户放行后按交付物清单（8 项：workflows/Issue表单/PR模板/CODEOWNERS/lint脚本/bulk抽取脚本+env补丁/新贡献规范/branch protection）实施。
+
+## [2026-06-18] 提案 | GitHub 贡献体系 并入用户 4 项裁决 → v0.4
+
+用户裁决 4 个开放问题，并入 skill/PROPOSAL-github-contribution.md v0.4：
+- Q1 译名库：固定 raw/data/cn_name_index.json，维护者刷新（每新系列/至少每月），走 PR+评审。
+- Q2 Issue→PR：采用现成 Action（已 webfetch 调研）——stefanbuck/github-issue-parser(v3,MIT 解析 Issue 表单成 JSON) + 胶水脚本渲染 frontmatter + peter-evans/create-pull-request(v8,MIT 开 PR)；关键集成约束：默认 GITHUB_TOKEN 建的 PR 不触发 on:pull_request 校验 CI，须用 PAT/App token（Issue 事件在 base 仓库、secrets 可用，可行）。
+- Q3 治理空白：本提案补第九节——9.1 改/纠错已有块（纠错优先、刷新 updated/as_of）；9.2 行为准则 + 来源版权（sources 须公开可访问、禁整段复制、维护者人工审、联动 P13）；9.3 争议内容（Tier 定性优先、分歧并列呈现、git revert/disputed 降权回退）。
+- Q4 all-cards bulk 体积：接受（actions/cache，default 分支预热，刷新周期宜短）。
+交付物增至 9 项（+CODE_OF_CONDUCT.md）。待对新增材料做确认评审。
+
+## [2026-06-18] 提案 | GitHub 贡献体系 确认评审(新材料）→ 收敛 v0.5
+
+对 v0.4 新增材料（Q2 工具链 / Q3 治理）做确认评审（CI 集成 + 治理/宪法 2 reviewer）→ approve-with-changes，并入 v0.5：
+- Q2 工具链安全硬化（CI reviewer）：① Issue 事件 + label 双重门控（on:issues + if contains label）；② 禁 run: 内联 ${{ issue.* }}（命令注入）经 env/文件传入；③ JSON→YAML 安全序列化（frontmatter 注入）；④ 文件名白名单防路径穿越；⑤ token 改 fine-grained GitHub App（弃宽权限 PAT）+ permissions 最小化；⑥ 确定性分支 issue-<number> 支持更新而非反复建 PR。"默认 GITHUB_TOKEN 建 PR 不触发校验 CI→须 App token"判断经核实正确。
+- Q3 治理去悬空（治理 reviewer）：① 9.2 版权规则自包含、立即生效，P13 仅未来对齐（不引用尚不存在的条款，守 P1）；② 9.3 disputed 改为"块自身 frontmatter 标记 + SKILL.md 读标记降权"（不碰编排逻辑），定义谁打/解除；③ revert/disputed 记 log 归维护者级（与 4.2 fork PR 不写 log 对齐）；④ Q1 刷新逾期兜底引用 step6 warning、不阻塞存量 PR；⑤ 并列分歧条目各带 as_of+sources、纠错优先级判据（事实错>时效>风格）。
+skill/PROPOSAL-github-contribution.md 收敛 v0.5，交付物 9 项，待用户放行实施。
+
+## [2026-06-18] 落地 | 实施 CI 强制查证的依赖项（离线索引脚本 + env 覆盖）
+
+按用户「先实施依赖项」，落地 GitHub 贡献体系 CI 强制查证所硬依赖的离线索引基础设施（不下载/提交多 GB bulk，只交付脚本 + 路径契约）：
+- raw/tools/mtg_wiki/utils.py：ORACLE_CARDS_PATH/CN_NAME_INDEX_PATH/RAW_DATA_DIR 改为 env 可覆盖（MTG_ORACLE_CARDS_PATH / MTG_CN_NAME_INDEX_PATH / MTG_RAW_DATA_DIR），默认路径不变 → CI 可指向下载的 bulk 而不必伪造 lite 文件名。实测向后兼容：无 env 时 card_search.py 仍正常（走 API）。
+- raw/tools/mtg_wiki/fetch_bulk.py（新）：经 /bulk-data 拿 type 对应 download_uri（非固定 URL）流式下载；--print-meta 输出 updated_at（供 actions/cache key）。实测 --print-meta 对 oracle_cards/all_cards 返回真实 uri+updated_at。
+- raw/tools/mtg_wiki/build_cn_index.py（新）：从 Scryfall all_cards 过滤 lang==zhs 抽 name/printed_name/oracle_id 生成 cn_name_index.json（en_to_cn/cn_to_en/by_oracle_id），处理 card_faces（DFC/split 逐面 + "A // B" 合并），可选 ijson 流式应对 2.5GB。实测单面(Sol Ring 阳光戒)+DFC(Fire//Ice 火//冰)+跳过 en 全部正确。字段形状经 live Scryfall 核实。
+- raw/data/.gitignore（新）：忽略 oracle-cards*/all-cards*/default-cards*/*-bulk-* 大文件，保留 cn_name_index.json（小、单一事实源、维护者刷新）。实测 gitignore 规则正确。
+- build_indices.py 无需改解析逻辑（oracle_cards 是 lite 超集，全 card.get），仅靠 utils env 覆盖即可对接 CI bulk。实测 env 覆盖跑通生成 card_name_index。
+
+实测约束：rulings(25MB) 真实下载因超 120s 工具超时未跑完（吞吐问题非脚本 bug，--print-meta 已证 download_uri 正确）；all_cards 2.5GB 仅 CI 缓存场景下载，本地不试。
+
+待决（浮出，归 R2/P13，本次不决）：oracle-cards-lite.json 是否要生成并提交一份精简本地库（R2 方案 B）、Scryfall 数据入库与版权策略（宪法 P13 待 R4 定稿）。本次只交付生成工具，不做数据入库决策。
+
+## [2026-06-18] 落地 | 实施 GitHub 社区贡献体系 CI 主体（v0.5 提案剩余交付物）
+
+按用户「实施」，落地除 branch protection（仓库设置，非文件）外的全部交付物，并端到端实测：
+
+模板（5 个）：补 cards_cited 字段（combo/card-eval 穷举、deck 子集、meta/decision-tree 豁免[]）；清理 cedh-deck.md 指向已回滚 ARCHITECTURE-cedh-skill 的注释。
+
+工具脚本（raw/tools/mtg_wiki/，stdlib-only，CI 可直接跑）：
+- lint_cedh_block.py：格式 gate——frontmatter 齐全/type↔block 映射/archetype 按 format 枚举/as_of 日期/目录命名/WikiLink 可解析/cards_cited 双语+穷举度/正文⊆cards_cited 一致性 warning。--changed BASE 取 PR 改动文件。实测：合法块 0 错；非法块（错 type/错 archetype/错日期/空 cards_cited）逐条 ERROR。
+- verify_cards.py：强制查证 gate（离线）——commander+cards_cited 逐张查英文存在性 + 官方中文译名匹配；无索引=neutral skip exit0；新牌=warning。实测：正确块 exit0；错译名「塔萨的神谕≠官方塔萨的先知」→ ERROR exit1。
+- render_cedh_issue.py：Issue 表单 JSON→规范 .md；安全硬化——值经 JSON 文件传入（非 shell 内联）、YAML 安全序列化（json.dumps）、slug 白名单防路径穿越。实测：slug 含 ../../ 被净化为 etcevil-oracle，产物过 lint 0 错。
+
+.github/（8 文件）：
+- workflows/cedh-block-validate.yml：on:pull_request 不加 paths（避免 required check 死锁）+ dorny/paths-filter 内部判断 + always-run gate；permissions: contents:read（fork 只读 token 足够，无 secret 依赖）；cache restore（key 用 bulk updated_at 日期）+ miss 时 fetch_bulk+build_indices 重建；lint+verify+P5 分层守卫（git diff 命中 concepts/entities/sources/synthesis 即 fail）。
+- workflows/cache-warm-indices.yml：main 分支 schedule(每日)+manual 预热 oracle(176MB)与 CN(all_cards 2.5GB,ijson 流式)索引，供 fork PR 只读命中；用完删 bulk 不留存。
+- workflows/cedh-issue-to-pr.yml：on:issues + label 双重门控；github-issue-parser→JSON 写文件→render→peter-evans/create-pull-request；用 secrets.CEDH_BOT_TOKEN（App token，非默认 GITHUB_TOKEN，否则 PR 不触发校验 CI）。
+- ISSUE_TEMPLATE/cedh-block.yml（零 YAML 填表）、PULL_REQUEST_TEMPLATE.md（只留人工信息）、CODEOWNERS（维护者级路径占位 @MAINTAINER）、CODE_OF_CONDUCT.md、CONTRIBUTING.md（社区内容块贡献指南）。
+
+YAML 全部 yaml.safe_load 通过。修断引用：ARCHITECTURE-mtg-skills.md §四/§六、PROPOSAL-repairs.md/PROPOSAL-l2-shared.md 的 CONTRIBUTING-mtg-skill 引用改为 .github/CONTRIBUTING.md（HANDOFF/log 历史记录不改，append-only）。
+
+待维护者手动配置（无法用文件落地）：① branch protection（required checks=cedh-block-validate + required reviews）；② secrets.CEDH_BOT_TOKEN（fine-grained GitHub App token: contents:write+pull-requests:write）；③ CODEOWNERS 的 @MAINTAINER 换真实账号；④ 仓库设置允许 Actions 创建 PR（若改用 GITHUB_TOKEN 路径）。
+git 干净无测试残留。
