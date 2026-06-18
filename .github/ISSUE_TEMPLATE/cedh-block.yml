@@ -1,0 +1,102 @@
+name: 提交 cEDH 内容块
+description: 零 YAML 填表提交一个 cEDH 内容块（套牌/Meta/决策树/combo/单卡），由机器人渲染成规范文件并自动开 PR。
+title: "[cedh-block] "
+labels: ["cedh-block"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        填完提交后，机器人会把内容渲染成规范 Markdown 文件并**自动开 PR**，CI 会强制校验格式与牌名（无需你本地装任何环境）。
+        牌名请写「中文（English）」，例如：`塔萨的先知（Thassa's Oracle）`。
+
+  - type: dropdown
+    id: block
+    attributes:
+      label: 内容块类型
+      options:
+        - 套牌拆解 (cedh-deck)
+        - Meta 快照 (cedh-meta)
+        - 决策树 (cedh-decision-tree)
+        - 组合技/Stax锁 (cedh-combo)
+        - 单卡评估 (cedh-card-eval)
+    validations:
+      required: true
+
+  - type: input
+    id: slug
+    attributes:
+      label: 文件名 slug（小写短横线，如 blue-farm；Meta 块会自动加日期前缀）
+      placeholder: blue-farm
+    validations:
+      required: true
+
+  - type: input
+    id: title_name
+    attributes:
+      label: 标题（中文名（English），如 蓝色农场（Blue Farm））
+    validations:
+      required: true
+
+  - type: dropdown
+    id: archetype
+    attributes:
+      label: 原型（仅套牌块需要；其它块选「不适用」）
+      options:
+        - 不适用
+        - Turbo
+        - Stax
+        - Midrange
+        - Adaptive
+    validations:
+      required: true
+
+  - type: input
+    id: commander
+    attributes:
+      label: 主将（仅套牌块；双将用 // 分隔，如 季宁（Kinnan...） // 副将；其它块留空）
+      placeholder: "季宁、债务俊杰（Kinnan, Bonder Prodigy）"
+
+  - type: dropdown
+    id: pair_type
+    attributes:
+      label: 配对类型（仅套牌块）
+      options:
+        - single
+        - partner
+        - partner-with
+        - friends-forever
+        - background
+    validations:
+      required: false
+
+  - type: textarea
+    id: cards_cited
+    attributes:
+      label: 涉及牌张（每行一张，「中文（English）」格式）
+      description: combo/单卡块须穷举；套牌块列核心+关键牌；Meta/决策树可留空。
+      placeholder: |
+        塔萨的先知（Thassa's Oracle）
+        恶魔咨商（Demonic Consultation）
+    validations:
+      required: false
+
+  - type: input
+    id: as_of
+    attributes:
+      label: 数据时效 as_of（YYYY-MM-DD；Meta/含占比数据必填）
+      placeholder: "2026-06-18"
+    validations:
+      required: true
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: 来源（每行一个可公开访问链接；Meta/占比类必填；禁整段复制他人正文）
+      placeholder: https://example.com/primer
+
+  - type: textarea
+    id: body
+    attributes:
+      label: 正文（Markdown；牌名「中文（English）」）
+    validations:
+      required: true

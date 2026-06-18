@@ -1,0 +1,73 @@
+name: cache-warm-indices
+
+# Warms the offline card indices on the DEFAULT branch so that PR validation
+# (including fork PRs, which can only READ base-branch caches) gets cache hits
+# instead of each PR re-downloading hundreds of MB / multiple GB of bulk.
+#
+# - oracle index: from oracle_cards bulk (~176MB) -> card_name_index.json
+# - CN<->EN index: from all_cards bulk (~2.5GB)   -> cn_name_index.json
+#
+# Scheduled daily + manual; short-ish cadence keeps the miss window small.
+on:
+  schedule:
+    - cron: '17 6 * * *'   # daily 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write   # to save caches
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install ijson (stream multi-GB all_cards)
+        run: pip install ijson
+
+      - name: Compute bulk cache date
+        id: bulkmeta
+        run: |
+          cd raw/tools/mtg_wiki
+          DATE="$(python3 fetch_bulk.py oracle_cards --print-meta | python3 -c 'import sys,json;print(json.load(sys.stdin)["updated_at"][:10])')"
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+
+      # ---- Oracle (EN) index ----
+      - name: Cache oracle index
+        id: cache-oracle
+        uses: actions/cache@v4
+        with:
+          path: raw/tools/mtg_wiki/data/card_name_index.json
+          key: oracle-index-${{ steps.bulkmeta.outputs.date }}
+
+      - name: Build oracle index
+        if: steps.cache-oracle.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          cd raw/tools/mtg_wiki
+          ORACLE_JSON="$(python3 fetch_bulk.py oracle_cards)"
+          MTG_ORACLE_CARDS_PATH="$ORACLE_JSON" python3 -c "import build_indices; build_indices.build_card_indices()"
+          rm -f "$ORACLE_JSON"   # don't keep the 176MB bulk around
+
+      # ---- CN<->EN index (needs all_cards, ~2.5GB; streamed via ijson) ----
+      - name: Cache CN index
+        id: cache-cn
+        uses: actions/cache@v4
+        with:
+          path: raw/data/cn_name_index.json
+          key: cn-index-${{ steps.bulkmeta.outputs.date }}
+
+      - name: Build CN index
+        if: steps.cache-cn.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          cd raw/tools/mtg_wiki
+          ALL_JSON="$(python3 fetch_bulk.py all_cards)"
+          UPDATED="$(python3 fetch_bulk.py all_cards --print-meta | python3 -c 'import sys,json;print(json.load(sys.stdin)["updated_at"][:10])')"
+          python3 build_cn_index.py "$ALL_JSON" -o ../../data/cn_name_index.json --updated-at "$UPDATED"
+          rm -f "$ALL_JSON"      # don't keep the 2.5GB bulk around

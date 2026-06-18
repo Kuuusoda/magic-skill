@@ -1,0 +1,108 @@
+name: cedh-block-validate
+
+# Runs on every PR (NOT gated by paths) so a required status check always
+# reports — otherwise PRs that don't touch cedh files would hang forever on
+# "Expected — Waiting for status". A paths-filter inside the job decides whether
+# real validation runs; the gate job always reports success/failure.
+on:
+  pull_request:
+
+# Minimal permissions. This workflow does NOT need write or secrets:
+# verification is offline (prebuilt indices restored from cache) and Scryfall
+# is unauthenticated. For fork PRs the default GITHUB_TOKEN is read-only, which
+# is sufficient here. Never write wiki/log.md from this PR workflow.
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR (full history for diff)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect cedh block changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            cedh:
+              - 'wiki/branches/strategy/cedh/**'
+              - 'wiki/branches/strategy/_templates/cedh-*.md'
+
+      - name: Setup Python
+        if: steps.filter.outputs.cedh == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compute bulk cache date
+        if: steps.filter.outputs.cedh == 'true'
+        id: bulkmeta
+        run: |
+          # Key caches by the Scryfall bulk's updated_at date so they refresh
+          # when Scryfall publishes new bulk, and hit otherwise.
+          cd raw/tools/mtg_wiki
+          DATE="$(python3 fetch_bulk.py oracle_cards --print-meta | python3 -c 'import sys,json;print(json.load(sys.stdin)["updated_at"][:10])')"
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+
+      # --- Restore offline indices (warmed on main by cache-warm.yml) ---
+      # Fork PRs can READ the base repo's default-branch cache but cannot write
+      # it back. On cache miss we regenerate from Scryfall bulk (unauthenticated).
+      - name: Restore card name index
+        if: steps.filter.outputs.cedh == 'true'
+        id: cache-oracle
+        uses: actions/cache/restore@v4
+        with:
+          path: raw/tools/mtg_wiki/data/card_name_index.json
+          key: oracle-index-${{ steps.bulkmeta.outputs.date }}
+          restore-keys: |
+            oracle-index-
+
+      - name: Restore CN name index
+        if: steps.filter.outputs.cedh == 'true'
+        id: cache-cn
+        uses: actions/cache/restore@v4
+        with:
+          path: raw/data/cn_name_index.json
+          key: cn-index-${{ steps.bulkmeta.outputs.date }}
+          restore-keys: |
+            cn-index-
+
+      # On miss, regenerate the EN oracle index (oracle_cards ~176MB).
+      # The CN index miss is tolerated: verify_cards.py degrades to EN-only.
+      - name: Build oracle index on cache miss
+        if: steps.filter.outputs.cedh == 'true' && steps.cache-oracle.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          cd raw/tools/mtg_wiki
+          ORACLE_JSON="$(python3 fetch_bulk.py oracle_cards)"
+          MTG_ORACLE_CARDS_PATH="$ORACLE_JSON" python3 -c "import build_indices; build_indices.build_card_indices()"
+
+      - name: Lint cedh blocks (format gate)
+        if: steps.filter.outputs.cedh == 'true'
+        run: |
+          python3 raw/tools/mtg_wiki/lint_cedh_block.py --changed "origin/${{ github.base_ref }}"
+
+      - name: Verify cards (forced offline verification)
+        if: steps.filter.outputs.cedh == 'true'
+        run: |
+          python3 raw/tools/mtg_wiki/verify_cards.py --changed "origin/${{ github.base_ref }}"
+
+      - name: Layer guard (P5 — only cedh paths allowed)
+        if: steps.filter.outputs.cedh == 'true'
+        run: |
+          set -euo pipefail
+          CHANGED="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          BAD="$(echo "$CHANGED" | grep -E '^wiki/(concepts|entities|sources|synthesis)/' || true)"
+          if [ -n "$BAD" ]; then
+            echo "ERROR: PR 改动了通用层（P5 禁止社区内容块 PR 触碰）："
+            echo "$BAD"
+            echo "若确需改通用层，请走维护者级 PR（非社区内容块流程）。"
+            exit 1
+          fi
+
+      - name: Gate result
+        run: echo "cedh validation gate complete (cedh changed = ${{ steps.filter.outputs.cedh }})"
