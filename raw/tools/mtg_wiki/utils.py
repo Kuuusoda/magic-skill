@@ -21,7 +21,20 @@ CACHE_DIR.mkdir(exist_ok=True)
 # Project root: utils.py is at raw/tools/mtg_wiki/utils.py
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
-ORACLE_CARDS_PATH = PROJECT_ROOT / "raw" / "data" / "oracle-cards-lite.json"
+# Data dir for committed/generated card data (oracle source + CN index).
+# Env-overridable so CI can point at a downloaded bulk without faking filenames.
+RAW_DATA_DIR = Path(os.environ.get("MTG_RAW_DATA_DIR", PROJECT_ROOT / "raw" / "data"))
+
+# Oracle cards source for build_indices. Default = committed/generated lite file;
+# CI overrides MTG_ORACLE_CARDS_PATH to the freshly downloaded Scryfall bulk.
+ORACLE_CARDS_PATH = Path(
+    os.environ.get("MTG_ORACLE_CARDS_PATH", RAW_DATA_DIR / "oracle-cards-lite.json")
+)
+# CN<->EN official name index (small, committed single source of truth; maintainer refreshes).
+CN_NAME_INDEX_PATH = Path(
+    os.environ.get("MTG_CN_NAME_INDEX_PATH", RAW_DATA_DIR / "cn_name_index.json")
+)
+
 WIKI_CONCEPTS_DIR = PROJECT_ROOT / "wiki" / "concepts"
 CR_DIR = PROJECT_ROOT / "raw" / "cr"
 
