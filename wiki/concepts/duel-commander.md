@@ -1,18 +1,18 @@
 ---
 created: 2026-04-21
-updated: 2026-04-21
+updated: 2026-07-08
 type: concept
 tags: [万智牌, 指挥官, EDH, Duel Commander, 1v1, 竞技]
-sources: [data/oracle-cards-lite.json]
+sources: [data/oracle-cards-lite.json, "https://www.duelcommander.org/rules/duelcommander_comprehensiverules/"]
 ---
 
-# Duel Commander（指挥官对决）
+# Duel Commander（指挥官对决 / 法禁）
 
 ## 定义
 
-Duel Commander（指挥官对决，简称 DC）是指挥官赛制的一种**1v1 竞技变体**。与标准的多人指挥官不同，Duel Commander 专为两位牌手之间的竞技对局设计，具有独立的禁限牌表、特殊的生命规则和对局结构。
+Duel Commander（指挥官对决，简称 DC，中文社区俗称**法禁**），是指挥官赛制的一种**1v1 竞技变体**。与标准的多人指挥官不同，Duel Commander（法禁）专为两位牌手之间的竞技对局设计，具有独立的禁限牌表、特殊的生命规则和对局结构。
 
-Duel Commander 由社区维护，而非威世智官方管理。
+Duel Commander（法禁）由社区维护，而非威世智官方管理。法禁因其独立于官方 EDH 的法国禁牌表而得名。
 
 ## 核心规则差异
 
@@ -63,20 +63,20 @@ Duel Commander 拥有独立的禁牌表，与官方 EDH 禁牌表不同：
 | **Oko, Thief of Crowns** | 鹏洛客 | 过于全面 |
 | **Teferi, Time Raveler** | 鹏洛客 | 封锁对手响应时机 |
 
-**注意**：Duel Commander 禁牌表会定期更新，具体请查询 [Duel Commander 官方网站](https://www.duelcommander.com/)。
+**注意**：下表只是历史/示例性说明，不是权威禁牌表。Duel Commander 禁牌表会定期更新，实际合法性应以官方 B&R 与本 Wiki 后续 `wiki/branches/strategy/duel-commander/banlist/` 快照为准。
 
 ## 赛制结构
 
 ### 对局规则
 
 - 对局进行直到一方牌手生命归零或满足替代获胜条件
-- 每局为单盘制（Best of 1），而非构筑赛常见的三局两胜
-- 比赛通常为瑞士轮 + 八强/四强淘汰赛
+- 官方规则默认比赛为三局两胜（Best of 3），主办方可在比赛开始前公告改用其他赛制结构
+- 比赛通常为瑞士轮 + 八强/四强淘汰赛，具体轮数与淘汰赛结构以赛事公告为准
 
 ### 计时
 
-- 正式比赛每盘有 55 分钟时间限制
-- 时间到后进入额外回合（5 个回合后结束，生命高者胜）
+- 官方规则默认每轮 50 分钟；主办方可在比赛开始前公告延长为 55 或 60 分钟，淘汰赛/决赛也可能使用更长或不限时
+- 时间到后进入额外回合（通常为当前回合起额外 5 个回合）；具体平局/胜负处理以赛事规则与裁判公告为准
 
 ## 套牌策略
 

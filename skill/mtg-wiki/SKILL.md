@@ -46,13 +46,16 @@ metadata:
 - 堆叠：CR 405（后进先出）
 - 状态动作：CR 704（自动执行，不使用堆叠）
 
-### 2. 牌张查询（中英文模糊检索）
+### 2. 牌张查询（实体解析优先）
 
 触发场景：用户提到具体牌名（中英文、模糊输入、俗称）
 
 流程：
-1. 调用 `card_search.py` 统一搜索
-2. 返回双语牌面信息（名称、费用、类型、规则叙述、赛制合法性）
+1. 若输入是短名、数字、绰号、半截名、套牌简称、组合技简称或多版本角色名，先调用 `card_resolve.py` 解析候选，不得直接采用 `card_search.py` 的第一个模糊结果。
+2. 若 `needs_clarification=true`，先列出候选并追问用户；不得继续生成规则或策略结论。
+3. 若解析为具体 card，再调用 `card_search.py` 查询 Oracle 详情。
+4. 若解析为 deck / archetype / combo，优先读取对应 wiki 内容块，再按需要查询相关单卡。
+5. 返回双语牌面信息（名称、费用、类型、规则叙述、赛制合法性）或对应策略实体说明。
 
 牌名格式规范：
 - 首次出现：`中文译名（English Name）`
@@ -84,6 +87,11 @@ metadata:
 ## 工具使用
 
 ```bash
+# 实体解析（短名/数字/俗称/套牌简称/组合技简称优先使用）
+python3 ./raw/tools/mtg_wiki/card_resolve.py "2099" --format duel-commander --intent commander
+python3 ./raw/tools/mtg_wiki/card_resolve.py "blue farm" --format cedh --intent deck
+python3 ./raw/tools/mtg_wiki/card_resolve.py "breach LED" --format judge --intent interaction
+
 # 牌张查询（支持中英文模糊检索）
 python3 ./raw/tools/mtg_wiki/card_search.py "Lightning Bolt"
 python3 ./raw/tools/mtg_wiki/card_search.py "闪电击"
@@ -157,7 +165,8 @@ APNAP (CR 101.4)：
 
 ## 注意事项
 
-- **涉及具体牌张时，必须查证** — 通过 `card_search.py` 或 API，不凭记忆
+- **涉及具体牌张时，必须查证** — 先用 `card_resolve.py` 处理歧义输入，再通过 `card_search.py` 或 API 查详情，不凭记忆
 - **中文牌名必须通过 mtgch 确认官方译名** — 玩家输入可能有误或俗称
+- **不得把模糊搜索第一结果当作用户意图** — 短名、数字、俗称、多候选接近时必须先消歧
 - **注意层系统和时间印记** — 复杂互动先判断层
 - **指挥官规则在 CR 903** — 额外套牌限制、颜色认同、统帅税
