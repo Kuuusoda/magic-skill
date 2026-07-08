@@ -46,13 +46,16 @@ Key Rule Reference:
 - Stack: CR 405 (LIFO)
 - State-based actions: CR 704 (execute automatically, do not use stack)
 
-### 2. Card Lookup (EN/CN fuzzy search)
+### 2. Card Lookup (entity resolution first)
 
 Trigger: User mentions a specific card name (EN, CN, fuzzy input, or nickname)
 
 Flow:
-1. Call `card_search.py` for unified search
-2. Return bilingual card info (name, cost, type, rules text, format legality)
+1. If the input is shorthand, a number, nickname, partial name, deck shorthand, combo shorthand, or a character with multiple printed versions, call `card_resolve.py` first. Do not accept the first fuzzy `card_search.py` hit as user intent.
+2. If `needs_clarification=true`, list candidates and ask the user before continuing.
+3. If the resolver selects a card entity, call `card_search.py` for Oracle details.
+4. If the resolver selects a deck / archetype / combo, read the matching wiki block first, then look up component cards as needed.
+5. Return bilingual card info (name, cost, type, rules text, format legality) or the resolved strategy entity.
 
 Card name format standard:
 - First occurrence: `Chinese Name (English Name)`
@@ -84,6 +87,11 @@ When user translates MTG deck guides or strategy articles:
 ## Tool Usage
 
 ```bash
+# Entity resolution (use first for shorthand/numbers/nicknames/deck or combo shorthand)
+python3 ./raw/tools/mtg_wiki/card_resolve.py "2099" --format duel-commander --intent commander
+python3 ./raw/tools/mtg_wiki/card_resolve.py "blue farm" --format cedh --intent deck
+python3 ./raw/tools/mtg_wiki/card_resolve.py "breach LED" --format judge --intent interaction
+
 # Card search (EN/CN fuzzy search supported)
 python3 ./raw/tools/mtg_wiki/card_search.py "Lightning Bolt"
 python3 ./raw/tools/mtg_wiki/card_search.py "闪电击"
@@ -157,7 +165,8 @@ For judge rules questions:
 
 ## Notes
 
-- **Always verify specific cards** — use `card_search.py` or API, never from memory
+- **Always verify specific cards** — use `card_resolve.py` for ambiguous input, then `card_search.py` or API for details; never answer from memory
+- **Never treat the first fuzzy hit as intent** — shorthand, numbers, nicknames, and close candidates require disambiguation first
 - **Chinese card names must be confirmed via mtgch** — user input may have errors or nicknames
 - **Mind the layer system and timestamp** — for complex interactions, determine layer first
 - **Commander rules are in CR 903** — sideboard limits, color identity, command tax

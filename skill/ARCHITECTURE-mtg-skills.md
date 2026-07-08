@@ -1,7 +1,7 @@
 # MTG Skill 体系架构设计
 
 - 文档地位:**全量万智牌 skill 体系的顶层架构设计**。所有 skill(含未来的 cedh)都是本架构的实例。
-- 版本:v1.0(经 3 轮多视角校验 + opencode 实测收敛,2026-06-18 定稿)
+- 版本:v1.1(在 v1.0 基础上补全全局牌名实体解析层,2026-07-08)
 
 ## 地基实测结论(2026-06-17,以 `opencode debug skill` / `opencode debug config` 为权威)
 
@@ -57,8 +57,9 @@
 │     opencode debug 实测确认;若不传递,子 agent 需自行引用。  │
 │     内容:                                                    │
 │     · 工具契约:card_search / rule_search / name_translator   │
-│       / scryfall_rulings (调用方式只定义一次)                │
+│       / card_resolve / scryfall_rulings (调用方式只定义一次) │
 │     · 公共规范:牌名双语格式、查证优先、层系统速查、引用格式  │
+│     · 实体解析:简称/绰号/半截名 → 候选列表 + 语境重排        │
 │     · Schema 契约:query-plan/card-info/rule-info/analysis... │
 │     L3 skill 不再重复粘贴,改一处全局生效                     │
 ├─────────────────────────────────────────────────────────────┤
@@ -74,6 +75,23 @@
 - 上层只能消费下层,不能跨层重定义下层已有的东西。
 - L3 **路由约定(无系统优先级,实测确认)**:mtg-wiki 全覆盖作通才基线;专家 skill(judge/各 breaker)靠 description 措辞引导模型在其领域被选中。重叠问题靠 description 的"专属定位 + 让渡边界"软引导(非系统仲裁),误选时由各 skill 内显式让渡兜底。
 - L2 是**唯一**定义工具/规范/Schema 的地方,落地为 `skill/_shared/mtg-common.md` + `opencode.json` 的 `instructions` 注入;L3 skill 引用而非复制(直接消灭"重复粘贴"病灶)。
+
+### 全局牌名实体解析层(v1.1)
+
+`card_search.py` 是单卡详情查询器,不是实体解析器。所有 skill 在遇到短名、数字、绰号、半截英文名、角色名、多版本同名角色时,必须先走 L2 的实体解析契约,再查单卡详情。
+
+典型失败并非某个赛制独有:
+- 法禁:`2099`、`spider99`、`phelia`、`tivit`、`kess`、`niv` 等会被普通 fuzzy 搜索误指。
+- cEDH:`blue farm`、`tymna/kraum`、`rogsi`、`tnt`、`sisay`、`najeela`、`thoracle`、`breach` 等既可能指套牌/组合技/单卡,也可能指不同版本或不同组件。
+- 摩登:`frog`、`energy`、`belcher`、`amulet`、`scam` 等常指套牌或 archetype,不是单张牌。
+- 裁判问答:用户说"oracle combo"可能是牌名、组合技路径或胜利条件缩写,不能直接查第一张牌。
+
+新增 L2 工具契约:`card_resolve.py`(或 `card_search.py --candidates`)输出候选列表、置信度、重排理由和是否需要追问。L3 skill 只提供赛制语境权重(例如 cEDH pod/meta、法禁 commander/meta、Modern deck archetype),不得各自重写实体解析算法。
+
+硬规则:
+- 低置信或多候选接近时先追问。
+- 如果根据格式语境自动选择,答案必须写明"我将 X 解析为 Y"。
+- 不得把数据库/API 第一结果当作用户意图。
 
 ---
 

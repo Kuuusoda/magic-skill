@@ -678,3 +678,96 @@ YAML 全部 yaml.safe_load 通过。修断引用：ARCHITECTURE-mtg-skills.md §
 
 待维护者手动配置（无法用文件落地）：① branch protection（required checks=cedh-block-validate + required reviews）；② secrets.CEDH_BOT_TOKEN（fine-grained GitHub App token: contents:write+pull-requests:write）；③ CODEOWNERS 的 @MAINTAINER 换真实账号；④ 仓库设置允许 Actions 创建 PR（若改用 GITHUB_TOKEN 路径）。
 git 干净无测试残留。
+
+## [2026-06-18] 提案 | 法禁 EDH（Duel Commander）模块架构 起草 + 第1轮校验 → v0.2
+
+确认"法禁 EDH"=Duel Commander 法式指挥官（1v1/20血/无指挥官伤害/独立法国禁牌表）。产出 skill/PROPOSAL-duel-commander.md，与 cedh 对称并列（非子集）。
+用户决策：archetype 7 类(Aggro/Control/Midrange/Combo/Stax/Voltron/Tempo)；禁牌表单一事实源快照+维护者手动维护(duelcommander.com)+硬校验(用禁牌 ERROR)；skill=duel-commander-breaker；lint 泛化为 lint_strategy_block.py。
+
+第1轮校验（架构/法禁领域/CI 集成 3 reviewer）→ 全 approve-with-changes。并入 v0.2：
+- banlist 拆 banned（全面禁，比对 commander+cards_cited）+ banned_as_commander（仅禁作指挥官，只比对 commander）——法禁核心特征，原扁平单表会双向误判（领域+架构 reviewer 独立指出）。
+- banned 列表放 frontmatter（非正文）→ 复用现有 parse_frontmatter 确定性解析。
+- 撤回"verify_cards.py 不用改"：其 CEDH_DIR/changed_files 硬编码会让 dc 块 cards_cited 静默跳过（破 P2）；需把目录集合提为 STRATEGY_DIRS 共用。
+- split_bilingual/normalize_name 抽到 utils.py，lint 与 verify 共用，禁牌比对按归一化 EN 面。
+- 校验基准定为"块 banlist_as_of ≤ 之的最新快照"（非全局最新，避免新禁牌误杀旧块）。
+- 泛化连带改动列为同 PR 原子项：cedh-block-validate.yml/CONTRIBUTING.md/docstring 引用改名 + shim；render_cedh_issue.py + cedh-issue-to-pr.yml 全 cedh 硬编码需参数化或开 dc 版；GitHub Issue Form dropdown 静态→cedh 4类 vs dc 7类 archetype 用两套表单。
+- 概念页 duel-commander.md:51-66 既存禁牌表标"非权威，以快照为准"去 P6 二源；首份 banlist 设为 deck/meta 前置闸门；Voltron 标边缘原型；补 Tempo 判定准则 + 先后手/London mulligan 维度。
+待确认轮校验后实施。
+
+## [2026-06-18] 提案 | 法禁 banlist 改为自动抓取 → PROPOSAL-duel-commander v0.3
+
+用户要求"验证禁牌表作为自动化脚本"。实测 duelcommander.com/banlist/：纯静态 HTML（115KB，非 JS 渲染），class 语义稳定——成功提取 88 张 class="ban-item banned"（全面禁→banned）+ 24 张 "ban-item banned commander-restricted"（仅禁指挥官→banned_as_commander），牌名清晰、分类准确，标准库可解析。可行性坐实（后续一次抓取因环境 SSL 抖动失败，非逻辑问题）。
+用户决策：① 自动化级别=定时自动开 PR（GitHub Actions 周期跑 fetch_dc_banlist.py，有 diff 用 create-pull-request 自动开 PR，维护者 review+merge，不直推 main）；② 卫生检查+失败不覆盖（banned 数量<阈值/类名消失/数量突变>±50% → 报错退出不生成快照，不静默覆盖旧快照）。
+并入 v0.3：§4.1 banlist 快照 banned 存 EN 名 + generated_by/source_hash 标记；新增 §4.3 自动化抓取小节（脚本+卫生检查+定时PR+安全）；§7 实施顺序加 fetch_dc_banlist.py + 定时 workflow。banlist 数据来源从 v0.2 的"维护者手动"改为"自动抓取+人工 merge 把关"。
+待确认轮校验后实施。
+
+## [2026-06-18] 提案 | 法禁 Duel Commander 确认轮 → 收敛 v0.4
+
+确认轮 3 reviewer：① v0.2 的 9 项 blocking 逐条核验全闭环（approve）；② 自动抓取机制 approve-with-changes（7 项）；③ 泛化集成 approve-with-changes（3 项）。并入 v0.4：
+泛化集成（reviewer3）：
+- as_of 与 banlist_as_of 正交双字段——dc 的 deck/meta 两者都要（as_of=观测时效，banlist_as_of=禁牌表版本），不可顶替；之前 v0.3 误删了 dc 的 as_of。
+- lint 日期校验循环 lint_cedh_block.py:147 (created/updated/as_of) 是漏网硬编码，须按 format 加 banlist_as_of 断言。
+- ★workflow 不可裸改名：cedh-block-validate 是维护者手配的 branch protection required check，改名→旧 check 消失→所有 PR 永久 hang。定：保留文件名/job 名，仅 paths-filter 加 duel-commander/**。dc 开独立 render_dc_issue.py + dc-block 表单（add-paths: duel-commander/**, label dc-block）。
+自动抓取（reviewer2）：
+- YAML 注入：牌名含 '/,/// (Urza's Saga 等)，stdlib 无 PyYAML，用 json.dumps 安全序列化；删"无注入面"措辞。
+- 卫生检查加固：两列表分别突变检测+归零即失败（防分类错位）；断言 HTTP200+Content-Type；canary 稳定禁牌断言（防200错误页）；删单张牌靠维护者 diff 兜底。
+- source_hash=解析结果（排序牌名列表）哈希，非整页哈希；用于幂等不开重复 PR。
+- App token CEDH_BOT_TOKEN（非 GITHUB_TOKEN，否则自动 PR 不触发校验）；固定分支 auto/dc-banlist 幂等更新；无递归（仅 schedule 触发）；失败通知（默认不通知定时任务）+ manual 手改快照兜底（lint 接受 generated_by=manual）。
+- banlist_as_of 优先取官网生效日，回落抓取日。
+v0.4 收敛，待用户放行实施（§7 七步）。
+
+## [2026-07-08] 提案 | 法禁 Duel Commander v0.5 设计补充
+
+修正 skill/PROPOSAL-duel-commander.md 内部遗留冲突：用户决策固化处的 banlist 来源从"维护者手动维护/不写抓取脚本"改为与 v0.3/v0.4 一致的"fetch_dc_banlist.py 自动抓取 + 定时自动开 PR + 维护者 review/merge"。
+
+补齐此前偏薄的内容层设计：新增 duel-commander/index.md 导航与 strategy/wiki 索引回链要求；补来源分层、各 dc 内容块模板必备章节、首批种子内容闸门、duel-commander-breaker 输出契约、lint/verify/禁牌/导航/cedh 回归验收矩阵。实施顺序从 7 步扩展为 8 步，加入 index、种子内容和验收检查，避免模块只落 CI/banlist 而缺少可消费知识层。
+
+## [2026-07-08] 提案 | 法禁 Duel Commander v0.6 规则版本与实战补充
+
+追查 Bo1/55 分钟来源：来自既有 `wiki/concepts/duel-commander.md` 的赛制结构段落,后被 `skill/PROPOSAL-duel-commander.md` 固化到用户决策中。根据 Duel Commander 官方综合规则,修正为"默认 BO3/50 分钟,主办方可在赛前公告覆盖"；同时更新概念页,将禁牌表示例标注为非权威,以官方 B&R 与后续 banlist 快照为准。
+
+提案推进到 v0.6：新增规则版本与来源优先级、`rules/` 快照层、source-registry、按 `effective_date <= as_of` 选择新旧规则的算法；补法禁合法性校验矩阵（commander、banned、banned_as_commander、companion、sideboard/outside-the-game、结构性禁用等）；补高手向实战内容路线图（起手调度、指挥官依赖度、局间换将、20 血资源账本、节奏基准、互动配置、对局矩阵、meta 可信度）。
+
+## [2026-07-08] 提案 | 法禁 Duel Commander v0.7 牌名简称消歧
+
+新增失败模式：用户问"2099"时,牌库/搜索可能返回多张候选牌；AI 若直接采用数据库第一个命中,会选到法禁语境下完全不使用的牌,而不是法禁 meta 中高占比的候选。实测本地 `name_translator.py "2099"` 失败,`card_search.py "2099"` 可返回 `Spider-Man 2099, Miguel O'Hara`,但这只是当前工具排序结果,不能作为稳定策略。
+
+提案补 v0.7：将短名/数字/绰号/部分牌名定义为实体解析问题,不是普通语义理解问题。新增候选发现、法禁语境重排、低置信追问、别名表、以及 `duel-commander-breaker/SKILL.md` 必须写入的牌名消歧规则。核心要求：不得直接采用 `card_search.py` 第一结果；必须按法禁合法性、commander 可能性、dc 内容块/meta 出现率、别名来源与置信度重排,低置信时先追问。
+
+补充压力测试：`spider99` → Spider token、`phelia` → Aphelia、`tivit` → End the Festivities/喜庆终结、`kess` → Kessig Wolf Run、`niv` → University Campus/洁尸客、`squee/slimefoot` 在单名与组合 commander 间摇摆。结论：现有 `card_search.py` 是查单卡详情工具,不是实体解析器；提案新增 `card_resolve.py` 设计,用 alias、法禁内容块/meta 命中、commander 可能性、合法性、banlist、字符串相似度分层评分,再调用 `card_search.py` 补全候选详情。
+
+## [2026-07-08] 架构 | 全局 MTG 牌名实体解析层上提到 L2
+
+确认简称/绰号/半截牌名误解析不是法禁独有,而是全 MTG skill 体系共性问题：cEDH 有 `blue farm` / `rogsi` / `tnt` / `thoracle` / `breach` 等套牌、组合技、单卡混合简称；摩登有 `frog` / `energy` / `belcher` / `amulet` 等 archetype 与单卡冲突；裁判问答中歧义牌名会导致错误规则结论。
+
+更新 `skill/ARCHITECTURE-mtg-skills.md` 到 v1.1：在 L2 公共能力层新增全局牌名实体解析层,明确 `card_search.py` 是单卡详情查询器,不是实体解析器；新增 `card_resolve.py`/`card_search.py --candidates` 契约,所有 L3 skill 共享候选列表、置信度、语境重排、低置信追问机制。
+
+更新 `skill/PROPOSAL-l2-shared.md` 到 v0.4：工具契约从 6 个扩展为 7 个,加入 `card_resolve.py`;新增全局实体解析契约,由 L2 定算法,由 L3 仅提供 `--format` 与 `--intent` 权重(cEDH/法禁/摩登/裁判各自语境)。硬规则：不得把数据库/API 第一结果当作用户意图；自动解析必须说明"我将 X 解析为 Y"；低置信必须追问。
+
+## [2026-07-08] 落地 | 实现 card_resolve.py 牌名实体解析器
+
+新增 `raw/tools/mtg_wiki/card_resolve.py`：区别于 `card_search.py` 的单卡详情查询,该脚本返回候选列表、score、reasons、warnings、components、selected、needs_clarification。支持 `--format judge|cedh|duel-commander|modern` 与 `--intent`；内置首批 alias（2099/spider99/phelia/kess/niv、blue farm/rogsi/tnt/thoracle/breach/LED、frog/energy/belcher/amulet 等）；读取 wiki 语境命中；必要时可调用 mtgch/Scryfall 扩展候选；支持 `--no-api` 供 CI/回归测试离线跑。
+
+新增 `tests/validation/test_card_resolve.py`：覆盖法禁简称避免 bad fuzzy、cEDH deck/combo 简称、Modern archetype 简称、裁判多组件互动（oracle consultation、breach LED）。验证通过：`python3 tests/validation/test_card_resolve.py`（4 tests OK）与 `python3 -m py_compile raw/tools/mtg_wiki/card_resolve.py tests/validation/test_card_resolve.py`。
+
+## [2026-07-08] 落地 | active skills/agents 接入 card_resolve.py
+
+将实体解析契约从提案层落到会被实际加载的 skill/agent 文档：更新 `skill/mtg-wiki/SKILL.md`、`skill/mtg-wiki/SKILL_EN.md`、`skill/mtg-judge-zh/SKILL.md`、`skill/modern-breaker/SKILL.md`、`agent/card-lookup.md`、`agent/mtg-wiki.md`、`agent/mtg-judge-zh.md`。短名、数字、俗称、半截名、套牌简称、组合技简称、多版本角色名必须先调用 `card_resolve.py`;若 `needs_clarification=true` 先追问;解析到 card 后再用 `card_search.py` 查 Oracle;解析到 deck/archetype/combo 后先读对应 wiki 内容。
+
+验证：`rg` 确认 active 文档均出现 `card_resolve.py`/`needs_clarification` 约束；`python3 tests/validation/test_card_resolve.py` 通过；`python3 -m py_compile raw/tools/mtg_wiki/card_resolve.py tests/validation/test_card_resolve.py` 通过；手动冒烟 `2099`/`blue farm`/`breach LED`/`frog` 均解析到预期实体或组件。
+
+## [2026-07-08] 落地 | 法禁 Duel Commander 知识层与 skill 种子
+
+继续补充法禁模块,将 `skill/PROPOSAL-duel-commander.md` 推进到 v0.8:新增 `wiki/branches/strategy/duel-commander/` 目录骨架、分支入口 `index.md`、`aliases.md`、`rules/source-registry.md`、最小 meta seed、Kess/Niv 两个 deck stub、6 个 dc 模板(`dc-deck`/`dc-meta`/`dc-decision-tree`/`dc-combo`/`dc-card-eval`/`dc-banlist`)与 `skill/duel-commander-breaker/SKILL.md`。
+
+同步 `wiki/branches/strategy/index.md` 与 `wiki/index.md` 入口,让法禁策略层可被发现。种子内容明确标注资料不足,不得生成 Tier/占比/胜率;专用 skill 要求回答带 `as_of`、`banlist_as_of`、`rules_as_of`,并优先用 `card_resolve.py --format duel-commander` 处理简称/歧义。
+
+本轮只落知识层与 skill 层;`lint_strategy_block.py`/`verify_cards.py` 泛化、`fetch_dc_banlist.py`、自动 PR workflow、dc issue 表单与首份真实 banlist 快照仍为后续实施项。验证通过:`python3 tests/validation/test_card_resolve.py` 与 `python3 -m py_compile raw/tools/mtg_wiki/card_resolve.py tests/validation/test_card_resolve.py`。
+
+## [2026-07-08] 落地 | 法禁 skill 大型赛事备战能力补充
+
+按“长期参加大型法禁赛事的牌手”视角审查 `duel-commander-breaker`:原 skill 能读法禁资料与处理简称,但缺少真实备赛会反复追问的关键项——牌表审计、赛事日期/banlist/rules/event policy 确认、前三回合计划、地基与曲线审计、flex slots、已知对手准备、时钟/平局风险、缺少快照时不得确认合法性的红线。
+
+更新 `skill/duel-commander-breaker/SKILL.md`:新增大型赛事备战触发、冠军赛压力测试 12 问、缺失信息/风险/下一轮测试题输出要求,并要求 flex slots、known-opponent prep、clock management、threat/answer alignment 等维度。更新 `wiki/branches/strategy/_templates/dc-deck.md`:新增牌表审计、赛事政策、先后手 T1/T2/T3、地基与曲线、Flex Slots、时钟计划。新增 `wiki/branches/strategy/duel-commander/decision-trees/tournament-prep-checklist.md`,并接入法禁 index 与 strategy index。提案推进到 v0.9。
+
+验证通过:`rg` 确认大型赛事/牌表审计/flex/时钟等关键约束落入 skill、模板、决策树与提案;`python3 tests/validation/test_card_resolve.py`;`python3 -m py_compile raw/tools/mtg_wiki/card_resolve.py tests/validation/test_card_resolve.py`。

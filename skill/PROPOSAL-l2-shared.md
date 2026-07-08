@@ -1,7 +1,7 @@
 # 提案：抽取 L2 公共能力层（`skill/_shared/mtg-common.md`）
 
 - 文档地位：落地 `ARCHITECTURE-mtg-skills.md` 的 **L2 公共能力层**——把多个 L3 领域 skill（mtg-wiki / mtg-judge-zh / modern-breaker / 未来 cedh-breaker）重复声明的公共契约抽成**单一事实源**，各 skill 与 agent **显式引用**而非各自粘贴。
-- 版本：**v0.3（已收敛）**——经 2 轮校验：v0.2 并入 3 位 reviewer 全部 blocking；确认轮 2 approve + 1 approve-with-changes（唯一项"schema 字段名清单仍属二源"已在 v0.3 删除）。**全部 reviewer 收敛，待用户放行后实施。**
+- 版本：**v0.4（实体解析补充）**——在 v0.3 已收敛基础上,补入全局牌名/简称实体解析契约。**待用户放行后实施。**
 - 创建：2026-06-18　更新：2026-06-18
 - 上位约束：`CONSTITUTION.md`（P6 单一事实源、P5 不破坏通用层、P11 破坏性变更可回退+记 log）、`ARCHITECTURE-mtg-skills.md`（L1/L2/L3 分层）、`.github/CONTRIBUTING.md`（社区内容块贡献规范）。
 
@@ -19,15 +19,44 @@
 
 **原则：L2 只持"指针 + 操作契约"，事实本体留 L1（概念页）/ `schema/*.json`。** 这是满足 P6 的关键——把"详略差异"误当"分工"会制造二源。
 
-1. **工具契约**：**6 个**脚本的路径、输入/输出约定、调用示例：
-   `card_search.py` / `name_translator.py` / `rule_search.py` / `scryfall_rulings.py` / `mtgch_name_index.py` / `validation.py`（均在 `./raw/tools/mtg_wiki/`）。L2 是工具路径的**唯一事实源**。
-2. **牌名双语规范**：首次「中文（English）」、后续「中文」；必须经 card_search/name_translator 查证，禁凭记忆。
+1. **工具契约**：**7 个**脚本的路径、输入/输出约定、调用示例：
+   `card_resolve.py` / `card_search.py` / `name_translator.py` / `rule_search.py` / `scryfall_rulings.py` / `mtgch_name_index.py` / `validation.py`（均在 `./raw/tools/mtg_wiki/`）。L2 是工具路径的**唯一事实源**。
+2. **牌名双语规范 + 实体解析契约**：首次「中文（English）」、后续「中文」；必须经 `card_resolve.py` / `card_search.py` / `name_translator.py` 查证，禁凭记忆。短名、数字、绰号、半截牌名、多版本角色名必须先解析候选,不得直接采用单结果 fuzzy。
 3. **层系统**：**只放"何时该查层系统"的操作指引 + `[[concepts/...]]` 指针**；CR 613 的 7 层顺序、613.6 跨层/613.8 从属等**事实本体不在 L2 复制**，唯一权威留概念页（L1）。
    > 注：此举同时收口 `ARCHITECTURE-mtg-skills.md` 把"层系统速查"列入 L2 的张力——以"L2 仅指针、L1 持事实"为准。
 4. **引用格式**：`[[WikiLink]]`、`file:line`、规则号（CR/MTR/IPG）、数据时效 `as_of` 标注规范；明确**唯一相对路径前缀风格**（见第六节）。
 5. **Schema 路径索引**：只列 `./schema/*.json` 的**文件名 + 一句用途**，**不复制任何字段级内容（含字段名清单）**；字段一律"以 json 为准，需要时 Read"。（避免字段名本身成为随 json 增删而漂移的二源）
 
 > 排除项：各 skill 工作流（judge 4-step、wiki 五大能力、cedh 内容块）留各自 SKILL.md。**judge SKILL.md Step1-3 内联的完整 JSON 示例属"工作流产出契约"，保留不删**（它不是重复契约，是 agent 必须照此输出的可操作格式）。
+
+### 全局实体解析契约(v0.4)
+
+`card_search.py` 的职责是"给定确定牌名后查牌面详情";`card_resolve.py` 的职责是"从用户输入解析候选实体"。所有 skill 必须按以下顺序处理牌名:
+
+1. 若用户输入是完整官方牌名或中文官方译名,可直接 `card_search.py` / `name_translator.py` 查证。
+2. 若输入是短名、数字、绰号、半截名、套牌简称、组合技简称或多版本角色名,必须先调用 `card_resolve.py` 或等价候选流程。
+3. `card_resolve.py` 输出候选列表、score、reasons、warnings、selected、needs_clarification。
+4. L3 skill 只提供 `--format` 与 `--intent`:
+   - `--format cedh --intent deck|commander|combo|card`
+   - `--format duel-commander --intent commander|deck|meta|card`
+   - `--format modern --intent deck|card|archetype`
+   - `--format judge --intent card|rule|interaction`
+5. 低置信或候选接近时先追问;自动选择时必须说明"我将 X 解析为 Y"。
+
+候选重排的公共信号:
+- alias 命中;
+- 官方名/中文译名匹配;
+- wiki 内容块命中(标题/frontmatter 高于正文);
+- 格式合法性;
+- 角色适配(intent=commander 时传奇且可作指挥官加权);
+- banlist/禁用状态;
+- 字符串相似度(只作最后一层,不得压过格式语境)。
+
+赛制专属信号由 L3 提供,但算法留 L2:
+- cEDH:pod/meta、组合技组件、常见 deck 名称、partner pair。
+- Duel Commander:commander 使用率、banlist、局间换将、法禁别名。
+- Modern:archetype/deck 名称优先于单卡 fuzzy。
+- Judge:若实体不确定,不得给规则结论;必须先澄清牌名。
 
 ### L2 自身结构契约（升级为实施前置）
 `mtg-common.md` 虽非 SKILL.md（不受 frontmatter/name 约束、不会被 `skills.paths` 当 skill 加载），但作为单一事实源须有最小规范：**固定 5 节锚点（对应上面 1-5）+ 领域红线（路径真实存在 / 牌名双语查证 / 规则号不编造）**，并配 lint 校验（见第五节），防 L2 自身漂移。
@@ -76,7 +105,7 @@
 ## 五、校验计划（分机器/人工）
 
 **【机器】**
-- `mtg-common.md` 存在；其引用的每条路径逐条 `test -f` 解析通过（含 6 个工具、`./schema/*.json`）。
+- `mtg-common.md` 存在；其引用的每条路径逐条 `test -f` 解析通过（含 7 个工具、`./schema/*.json`；若 `card_resolve.py` 尚未落地,实施 PR 必须同步新增或将其标为待建且不得删除旧牌名流程）。
 - 断言 L2 **不含** schema 字段级内容（含字段名清单）、不含 CR 613 层序事实本体（防二源）。
 - 改动后 `opencode debug skill`（三 skill 加载）+ `opencode debug config`（配置解析）通过。
 - （前置）lint 脚本：校验 L2 路径真实 + schema 文件存在，从开放问题升级为实施前置。
