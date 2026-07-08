@@ -6,7 +6,7 @@
 
 ## 输入
 
-一个中文牌名（如"闪电击"）
+一个牌名或牌名简称（如"闪电击"、"2099"、"breach LED"）
 
 ## 输出 Schema
 
@@ -35,6 +35,24 @@
 - **error**: 错误信息（如翻译失败），成功时为 null
 
 ## 执行流程
+
+### Step 0: 实体解析（歧义输入必须）
+
+短名、数字、绰号、半截名、组合技简称、多版本角色名必须先解析候选：
+
+```bash
+python3 raw/tools/mtg_wiki/card_resolve.py "牌名" --format judge --intent card
+```
+
+若是多牌互动或组合技，使用：
+
+```bash
+python3 raw/tools/mtg_wiki/card_resolve.py "用户输入" --format judge --intent interaction
+```
+
+- `needs_clarification=true` → error = "牌名存在歧义: ..."，列出候选，不得猜测。
+- `components` 非空 → 对每个 component 分别执行后续查询。
+- 不得把 `card_search.py` 的第一个 fuzzy 结果当作用户意图。
 
 ### Step 1: 翻译牌名
 

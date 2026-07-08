@@ -81,7 +81,13 @@ echo '{agent输出的JSON}' | python3 ./raw/tools/mtg_wiki/validation.py --schem
 
 **方法 A（推荐）：直接用 Bash 调用工具脚本**
 ```bash
-# Step 1: 翻译牌名
+# Step 0: 解析牌名/简称/多组件互动
+python3 ./raw/tools/mtg_wiki/card_resolve.py "用户输入" --format judge --intent card
+
+# 若用户输入是组合技或多牌互动，使用 interaction intent
+python3 ./raw/tools/mtg_wiki/card_resolve.py "用户输入" --format judge --intent interaction
+
+# Step 1: 对 resolver 选中的 card 或 components 翻译牌名
 python3 ./raw/tools/mtg_wiki/name_translator.py "中文牌名"
 
 # Step 2: 查询 Oracle（使用英文牌名）
@@ -105,13 +111,15 @@ python3 ./raw/tools/mtg_wiki/card_search.py "English Name"
 **方法 B（fallback）**：如果 Bash 调用返回错误或多义结果，才启动 Agent
 
 **方法 A 与方法 B 的选择标准**：
-- 方法 A 适用于：name_translator.py 返回唯一结果且 card_search.py 成功的情况
-- 方法 B 适用于：翻译失败、返回多张候选牌、或需要额外判断时
+- 方法 A 适用于：`card_resolve.py` 已选中唯一实体，且 name_translator.py / card_search.py 成功的情况
+- 方法 B 适用于：resolver 输出 `needs_clarification=true`、翻译失败、返回多张候选牌、或需要额外判断时
+- 若 resolver 输出 `components`，必须分别查询每个组件；若任一组件不确定，先追问，不得给规则结论
 
 **并行化**：所有牌的查询是独立的，可以**全部并行**用 Bash 调用。"general-purpose", prompt="[agent定义] 查询牌名: {card_name}")`
 
 Agent 内部会执行：
 ```bash
+python3 ./raw/tools/mtg_wiki/card_resolve.py "牌名或互动输入" --format judge --intent card
 python3 ./raw/tools/mtg_wiki/name_translator.py "牌名"
 python3 ./raw/tools/mtg_wiki/card_search.py "英文牌名"
 ```
@@ -392,6 +400,7 @@ python3 ./raw/tools/mtg_wiki/validation.py --schema verdict verdict.json
 
 ### 工具脚本位置
 - `name_translator.py`: `./raw/tools/mtg_wiki/name_translator.py`
+- `card_resolve.py`: `./raw/tools/mtg_wiki/card_resolve.py`
 - `card_search.py`: `./raw/tools/mtg_wiki/card_search.py`
 - `rule_search.py`: `./raw/tools/mtg_wiki/rule_search.py`
 - `scryfall_rulings.py`: `./raw/tools/mtg_wiki/scryfall_rulings.py`

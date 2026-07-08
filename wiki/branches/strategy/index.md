@@ -10,6 +10,15 @@ sources: []
 
 ## 当前聚焦：摩登（Modern）环境破解
 
+## Duel Commander（法禁）
+
+- [[duel-commander/index|Duel Commander 法禁策略分支]]
+- [[duel-commander/meta-snapshots/2026-07-08-dc-seed|法禁最小环境快照占位]]
+- [[duel-commander/decision-trees/tournament-prep-checklist|法禁大型赛事备战检查]]
+- [[duel-commander/aliases|法禁别名与简称解析]]
+
+法禁策略分支目前处于种子阶段：已建立目录、模板、别名解析约定与专用 skill；正式 meta/Tier/占比需要摄入公开赛事样本与官方 banlist 快照后再写入。
+
 ### 决策树
 
 - [[decision-trees/modern-meta-selection|摩登 Meta 套牌选择决策树]]
