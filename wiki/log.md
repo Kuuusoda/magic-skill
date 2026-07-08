@@ -2,6 +2,19 @@
 
 按时间顺序记录的 Ingest、Query 和 Lint 操作。
 
+## [2026-06-22] ingest | TopDeck 限制赛入门学习资料索引
+
+从微信公众号文章《【攻略】万智牌限制赛入门读物》（TopDeck，2025-05-30）提取限制赛学习资料清单：
+- 新建 raw 目录：`raw/limited-learning-materials-2025-05-30/`
+- 保存索引页全文：`10-limited-reading-list.md`
+- 保存 9 篇延伸资料的标题、作者线索和原始链接；直接访问这些历史文章时触发微信“环境异常/验证”页面，未将验证页伪装为正文
+- 用户补充复制正文后，已摄入 `01`、`02`、`03`、`05`、`06`、`07` 和 `09` 的可用内容；其中 `09` 实际为轮抓套牌构成入门，不是《谁是进攻者》原文
+- `04` 仍为占位，`08` 仅有简短视频介绍；按用户指示两者暂不作为核心资料
+- 新建来源摘要：`wiki/sources/2026-06-22-topdeck-limited-reading-list.md`
+- 新建综合页：`wiki/synthesis/limited-learning-path.md`
+- 新建限制赛大师 skill：`skill/limited-master/`
+- 更新索引：`wiki/index.md`
+
 ## [2026-06-03] ingest | 完整规则（CR）2026年4月17日中文版更新
 
 将中文 CR 更新至 2026-04-17 生效版（Secrets of Strixhaven）：

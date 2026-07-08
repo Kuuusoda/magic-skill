@@ -19,6 +19,7 @@
 - [[2026-05-20-wpn-retailer-policies|WPN 零售商方针]] — WPN 认证零售店运营政策：产品发布、促销材料、营销规范（英文版）
 - [[2026-06-03-mtr-2026-feb27-en|万智牌比赛规则（MTR）— 2026年2月27日英文版]] — 官方英文 MTR PDF 全文 Markdown 转录
 - [[2026-06-03-ipg-2024-sep23-en|万智牌违规处理方针（IPG）— 2024年9月23日英文版]] — 官方英文 IPG PDF 全文 Markdown 转录
+- [[2026-06-22-topdeck-limited-reading-list|TopDeck 限制赛入门学习资料索引]] — 限制赛入门读物索引：基础理论、现开、调度、17Lands、团队现开、攻守角色
 
 ## 实体
 
@@ -264,6 +265,7 @@
 - [[sos-limited-analysis|SOS 限制赛全面分析]] — 基于卡牌组成推断的 School of Spells 限制赛环境预测（结合 TMT/TDM/ECL 跨系列模式）
 - [[blue-farm-analysis|Blue Farm 全面分析]] — Kraum/Tymna 竞技指挥官套牌的时间横向与 Meta 纵向联合分析
 - [[2026-04-23-sos-draft-p2p-choice|SOS 轮抽抉择分析]] — 连辞套牌第二抓选牌策略（振奋塑望师 → Snooping Page）
+- [[limited-learning-path|限制赛学习路径]] — 从基础理论到现开、轮抽、调度、17Lands 数据和攻守角色判断的入门路线
 - [[branches/strategy/decks/tameshi-belcher|Tameshi Belcher（无地蓝炮）套牌分析]] — Modern Tier 3 蓝白零地组合技，15 份牌表完整 10 节解析（核心机制 / Karsten / 12 对局实测 / 7 条 CR 互动）
 
 ## 输出

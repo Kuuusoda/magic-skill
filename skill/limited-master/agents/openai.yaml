@@ -1,0 +1,4 @@
+interface:
+  display_name: "限制赛大师"
+  short_description: "万智牌限制赛学习、现开组牌、轮抽信号与对局复盘教练"
+  default_prompt: "Use $limited-master to review my draft picks and build a stronger Limited deck."

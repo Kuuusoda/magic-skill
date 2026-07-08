@@ -48,6 +48,12 @@ Agent 回答规则问题前，先通过此路由器确定需要查阅的决策�
 | 延缓、suspend | [[suspend]] | [[costs]], [[x-spell-mana-value]] |
 | X 咒语、CMC、MV | [[x-spell-mana-value]] | [[costs]], [[suspend]] |
 | 复制、clone、copy | [[copy-effects]] | [[tokens]], [[state-based-actions]] |
+| 备法、prepare、prepared、unprepared | [[preparation]] | [[copy-effects]], [[state-based-actions]], [[zone-changes]] |
+| 定式、paradigm | [[paradigm]] | [[copy-effects]], [[triggered-ability-structure]], [[zone-changes]] |
+| 催命、casualty | [[costs]] | [[copy-effects]], [[triggered-ability-structure]] |
+| 共鸣、affinity | [[costs]] | [[copy-effects]] |
+| 风暴、storm | [[copy-effects]] | [[stack-resolution]], [[triggered-ability-structure]] |
+| 介入性if、intervening if、infusion | [[intervening-if]] | [[triggered-ability-structure]], [[copy-effects]] |
 | 模态、选择一项 | [[modal-abilities]] | — |
 | 区域、离场、进坟场、放逐 | [[zone-changes]] | [[tokens]], [[removal-and-survival]] |
 
@@ -93,11 +99,15 @@ Agent 回答规则问题前，先通过此路由器确定需要查阅的决策�
 │   ├─ 层系统？     → layer-system (fwk)
 │   ├─ 复制品？     → copy-effects
 │   ├─ 指示物？     → counters
+│   ├─ 备法？       → preparation + copy-effects + state-based-actions
 │   └─ 区域变更？   → zone-changes
 │
 └─ 特殊机制？
     ├─ 倾曳/Cascade     → cascade
     ├─ 返照/Flashback   → flashback
+    ├─ 备法/Prepare      → preparation
+    ├─ 定式/Paradigm     → paradigm
+    ├─ 催命/Casualty     → costs + copy-effects
     ├─ 延缓/Suspend     → suspend + costs
     ├─ 佩带/灵气        → equipment-auras
     └─ 鹏洛客           → planeswalkers
@@ -112,6 +122,9 @@ Agent 回答规则问题前，先通过此路由器确定需要查阅的决策�
 | 侵染 + 系命 | `damage` → `lifelink` |
 | 不灭 + 致命伤害 + 防御力≤0 | `state-based-actions` → `removal-and-survival` → `damage` |
 | 复制 + 传奇 | `copy-effects` → `state-based-actions` |
+| 备法 + 复制品离开放逐区 | `preparation` → `copy-effects` → `state-based-actions` |
+| 催命 + 共鸣/返照 | `costs` → `copy-effects` → `stack-resolution` |
+| Token 创建倍增 | `replacement-effects` → `tokens` → `copy-effects` |
 | 灵气 + 辟邪 | `equipment-auras` → `targeting-restrictions` → `targeting` |
 | 牺牲阻挡者 + 践踏 | `combat-phase` → `trample` → `damage` |
 | 延缓 + X + 不支付 | `suspend` → `x-spell-mana-value` → `costs` |

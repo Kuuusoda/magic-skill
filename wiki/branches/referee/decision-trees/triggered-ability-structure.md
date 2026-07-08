@@ -15,27 +15,44 @@ sources: []
 - 牌面包含 "When/Whenever [event], you may [action]. If you do, [effect]."
 - 题目涉及判断一个异能是"单一触发"还是"触发+延迟触发"
 - 题目涉及 "When you do" / "If you do" 结构的反击/互动
+- 题目涉及"每当你施放以某物为目标的咒语"、连辞（repartee）或类似施放时触发
 
 ## 检索路径（按优先级排序）
 
 1. **CR 603.2 Triggered Abilities** → 确认触发式异能的基本定义
-   - 触发事件发生时，异能进入堆叠
+   - 触发事件发生时，异能会触发；下一次有牌手将获得优先权时进入堆叠
+   - 一个咒语若满足"以生物为目标"这类触发事件，只会让同一个"每当你施放..."异能触发一次；不是每个目标各触发一次
+   - 触发条件如果写在触发事件中（如 "Whenever you cast an instant or sorcery spell that targets a creature"），它不是介入性 if；触发后不会因为目标改变、目标离场、咒语被反击而重新检查
 
-2. **CR 603.12 Delayed Triggered Abilities** → 确认延迟触发的定义
+2. **CR 113.7a 异能独立于来源** → 确认来源或原咒语变化后的处理
+   - 触发式异能一旦触发并进入堆叠，就独立于其来源存在
+   - 来源离场不会阻止该触发式异能结算
+   - 但这只说明触发仍会结算；它**不**会反击、移除或阻止原本的咒语继续按堆叠结算
+
+3. **CR 603.12 Delayed Triggered Abilities** → 确认延迟触发的定义
    - **关键确认点**: "When you do" / "If you do" 结构是否创建了**延迟触发**？
    - 标准结构: "Whenever [event], you may [do A]. When you do, [effect B]."
      - 第一部分 "Whenever [event]..." 是**触发式异能**（进入堆叠）
      - 当玩家选择 "do A" 时，创建了一个**延迟触发**: "When you do, [effect B]"（进入堆叠）
    - 这意味着存在**两个独立的触发事件**，可以分别被反击
 
-3. **CR 603.4 Intervening If Clauses** → 区分 "When you do" 和介入性 if
+4. **CR 603.4 Intervening If Clauses** → 区分 "When you do" 和介入性 if
    - 介入性 if: "When [event], if [condition], [effect]" — 条件在触发时检查
    - "When you do": 不是介入性 if，而是创建延迟触发的信号
 
-4. **CR 603.10a Last Known Information** → 涉及离场触发时的对象追踪
+5. **CR 603.10a Last Known Information** → 涉及离场触发时的对象追踪
    - 如果延迟触发的源永久物已离场，使用最后已知信息
 
 ## 常见陷阱
+
+- **陷阱**: 咒语以两个生物为目标，所以 "Whenever you cast a spell that targets a creature" 触发两次
+  → **正确理解**: 触发事件是"施放一个符合条件的咒语"。该咒语只造成一次触发；多个目标只让它满足条件，不会倍增触发次数。
+
+- **陷阱**: 触发式异能独立于来源，所以移走来源后只有触发结算，原咒语不会继续结算
+  → **正确理解**: 来源离场不影响已触发的异能；如果原咒语没有被反击，且结算时仍有合法目标，它仍会继续结算并执行自己的效应。
+
+- **陷阱**: "targets a creature" 是介入性 if，结算时要重新检查是否仍以生物为目标
+  → **正确理解**: 这是触发事件的一部分。它在施放咒语时判断；触发后不因目标变化、目标离场或来源离场而消失。
 
 - **陷阱**: "Whenever... you may... When you do..." 是单一触发式异能
   → **正确理解**: 这是**一个触发式异能 + 一个延迟触发**。"When you do" 是独立的事件，会创建进入堆叠的延迟触发。可以分别被 Tishana's Tidebinder 等效应反击。

@@ -31,6 +31,8 @@ sources: []
 3. **区分 "介入性 if" 与 "条件效果"** → 避免混淆
    - **介入性 if**: 紧跟触发条件，控制触发和结算
    - **条件效果**: 出现在效应部分（如 "destroy target creature if it's tapped"），只在结算时判断，不影响触发
+   - 例如 `When this creature enters, target creature gets -4/-4 until end of turn if you gained life this turn.` 中，`if you gained life this turn` 不紧跟 `When this creature enters`，因此不是介入性 if。该异能会正常触发并入堆叠；结算时才检查你本回合是否获得过生命。
+   - “是否获得过生命”检查的是事件是否发生过，不是当前生命总量是否高于回合开始。即使同一回合中后来失去更多生命，只要曾经获得过生命，条件仍为真。
 
 4. **区分 "介入性 if" 与 "When/If you do"** → 避免混淆
    - **介入性 if**: "When [event], if [condition], [effect]" — 条件在触发时和结算时各检查一次
@@ -50,6 +52,9 @@ sources: []
 
 - **陷阱**: 牌面中所有 "if" 都是介入性 if
   → **正确理解**: CR 603.4 明确说明只适用于**紧跟触发条件之后**的 "if"。效应部分的 "if"（如 "draw a card if you control a creature"）是普通条件，只在结算时判断。
+
+- **陷阱**: `When this enters, target creature gets -4/-4 if you gained life this turn` 是介入性 if
+  → **正确理解**: 该 if 位于效应句尾，不紧跟触发事件；它只在结算时检查。若异能触发后、结算前你获得了生命，效果会发生。
 
 - **陷阱**: 介入性 if 的触发事件发生后，即使条件变为假，异能仍会在堆叠上保留
   → **正确理解**: 如果条件在结算时变为假，异能**从堆叠移除**，不会继续结算。
