@@ -97,7 +97,7 @@
 - [[legendary-creature|传奇生物]] — 可作为指挥官的牌张类型
 - [[edh-banned-list|EDH 禁牌表]] — 指挥官规则委员会的禁牌列表
 - [[edh-social-contract|EDH 社交契约]] — 指挥官赛制的非正式玩家共识
-- [[duel-commander|Duel Commander]] — 1v1 竞技指挥官变体
+- [[duel-commander|Duel Commander]] — 1v1 竞技指挥官变体；策略资料入口见 [[duel-commander/index|Duel Commander 法禁策略分支]]
 - [[banned-and-restricted|禁限牌表]] — 各赛制的禁限牌规则
 - [[prerelease|售前赛]] — 新系列发布前的现开体验活动
 - [[mtg-arena|万智牌竞技场]] — 官方数字对战平台

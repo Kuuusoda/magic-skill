@@ -38,6 +38,20 @@ description: 万智牌「摩登（Modern）」赛制竞技策略分析。用于�
 
 ## 执行规范
 
+### 牌名/套牌简称解析
+
+用户使用简称、绰号、半截名或套牌口语名时，先解析实体：
+
+```bash
+python3 ./raw/tools/mtg_wiki/card_resolve.py "frog" --format modern --intent deck
+python3 ./raw/tools/mtg_wiki/card_resolve.py "energy" --format modern --intent deck
+python3 ./raw/tools/mtg_wiki/card_resolve.py "belcher" --format modern --intent deck
+```
+
+- 若解析为 deck / archetype，读取对应 `wiki/branches/strategy/decks/` 文档。
+- 若 `needs_clarification=true`，先列候选追问，不得编造套牌。
+- 不得把 `card_search.py` 或全文搜索的第一个命中当作套牌意图。
+
 ### Meta 查询
 
 查询最新 meta 快照：
