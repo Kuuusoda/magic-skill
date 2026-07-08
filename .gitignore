@@ -20,3 +20,4 @@ raw/tools/mtg_wiki/data/
 *.tmp
 *.log
 *.pdf
+output/
