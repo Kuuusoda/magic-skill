@@ -7,13 +7,19 @@
 - [ ] 决策树 (cedh-decision-tree)
 - [ ] 组合技/Stax锁 (cedh-combo)
 - [ ] 单卡评估 (cedh-card-eval)
+- [ ] 法禁套牌拆解 (dc-deck)
+- [ ] 法禁 Meta 快照 (dc-meta)
+- [ ] 法禁决策树 (dc-decision-tree)
+- [ ] 法禁组合技/锁 (dc-combo)
+- [ ] 法禁单卡评估 (dc-card-eval)
+- [ ] 法禁禁牌快照 (dc-banlist)
 - [ ] 修订/纠错已有块
 
 ## 一句话摘要
 
 
 ## 数据来源与信心
-<!-- meta/占比类必填：来源链接；是否定性推测 -->
+<!-- meta/占比类必填：来源链接；是否定性推测；法禁请说明 banlist_as_of/rules_as_of -->
 
 
 ## 是否含新牌（Scryfall bulk 可能尚未收录，需维护者放行）

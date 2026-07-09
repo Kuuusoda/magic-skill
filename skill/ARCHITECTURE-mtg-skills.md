@@ -1,15 +1,16 @@
 # MTG Skill 体系架构设计
 
 - 文档地位:**全量万智牌 skill 体系的顶层架构设计**。所有 skill(含未来的 cedh)都是本架构的实例。
-- 版本:v1.1(在 v1.0 基础上补全全局牌名实体解析层,2026-07-08)
+- 版本:v1.2(在 v1.1 基础上落地 L2 shared、确认 4 个 skill 注册、补入 Duel Commander,2026-07-09)
 
-## 地基实测结论(2026-06-17,以 `opencode debug skill` / `opencode debug config` 为权威)
+## 地基实测结论(2026-07-09,以 `opencode debug skill` / `opencode debug config` 为权威)
 
 第 1 轮校验曾担心"`./skill` 可能未被加载"。已用 opencode 1.15.6 实测确认:
 
-- ✅ **`skills.paths: ["./skill"]` 生效**:`opencode debug skill` 列出 `mtg-wiki`、`mtg-judge-zh`,location 指向 `skill/<name>/SKILL.md`,确认本仓库 skill 被正常加载。`skills.paths` 是真实配置项(见内置 customize-opencode skill 文档),且**递归扫描 `**/SKILL.md`**。
-- ❌ **`modern-breaker` 未被加载**:不在 `debug skill` 输出中——实锤其缺 frontmatter 被过滤,是**死 skill**。架构中凡引用它处均标注"当前未注册,需补 frontmatter 复活"。
-- ⚙️ **`skill/_shared/`(无 SKILL.md)按 loader 行为推断安全**(目录待建,非已存在实测):加载器只注册带 SKILL.md 的目录,故公共文档目录不会被误注册。
+- ✅ **`skills.paths: ["./skill"]` 生效**:`opencode debug skill` 列出 `duel-commander-breaker`、`modern-breaker`、`mtg-judge-zh`、`mtg-wiki`,location 指向 `skill/<name>/SKILL.md`,确认本仓库 skill 被正常加载。`skills.paths` 是真实配置项,且**递归扫描 `**/SKILL.md`**。
+- ✅ **`modern-breaker` 已复活**:已出现在 `debug skill` 输出中,不再是死 skill。
+- ✅ **`skill/_shared/` 不会被误注册为 skill**:该目录无 `SKILL.md`,`debug skill` 不列出 `_shared`;公共文档通过 `opencode.json` 的 `instructions` 注入。
+- ✅ **L2 shared 已注入主会话配置**:`opencode debug config` 可解析 `instructions: ["skill/_shared/mtg-common.md"]`。子 agent 是否继承仍需独立实测,但主会话级工具/实体解析契约已可作为共享层生效。
 - **权威校验手段**:`opencode debug skill`(列已加载 skill)、`opencode debug config`(看解析后配置)、`opencode debug agent <name>`——本架构所有"是否生效"类断言以这些命令实测为准,不靠网页文档推断。
 
 - 创建:2026-06-17
@@ -52,9 +53,8 @@
 ├─────────────────────────────────────────────────────────────┤
 │ L2  公共能力层  Shared Capabilities (单一事实源)             │
 │     落地形式:`skill/_shared/mtg-common.md`,经 opencode.json │
-│     的 "instructions" 字段注入主会话规则上下文(官方支持)。  │
-│     〔待实测〕是否传递到被调度的子 agent —— 文档未载,需用    │
-│     opencode debug 实测确认;若不传递,子 agent 需自行引用。  │
+│     的 "instructions" 字段注入主会话规则上下文。            │
+│     已实测主会话配置解析通过;子 agent 继承性仍需单独实测。 │
 │     内容:                                                    │
 │     · 工具契约:card_search / rule_search / name_translator   │
 │       / card_resolve / scryfall_rulings (调用方式只定义一次) │
@@ -67,7 +67,8 @@
 │     · 通用知识库 wiki/concepts|entities|sources|synthesis    │
 │     · 分支层 wiki/branches/{referee,strategy,creation,diy}   │
 │     · 原始资料 raw/{cr,mtr,ipg,references}                   │
-│     · 牌张数据 + 本地索引(build_indices.py 前置生成)         │
+│     · 牌张数据来源 + 可选本地索引(build_indices.py 生成);    │
+│       索引缺失时由 mtgch/Scryfall API 回退                  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -104,6 +105,7 @@
 | 通才基线 | `mtg-wiki` | **全覆盖**:规则+牌张+赛制+策略+背景+翻译 | concepts 通用层 + 各分支 | 任何问题都能答;在专家领域让位给专家 |
 | 规则裁判 | `mtg-judge-zh` | 规则/互动/合法性/政策裁定 | branches/referee | 策略让给 breaker;非裁定回落 wiki |
 | 赛制策略 | `modern-breaker` | 摩登 meta/套牌/对局 | branches/strategy(摩登) | 规则让给 judge;其它赛制让给对应 breaker |
+| 赛制策略 | `duel-commander-breaker` | Duel Commander/法禁 1v1 竞技策略、禁牌表/规则版本边界、20 血资源判断 | `branches/strategy/duel-commander/` + `concepts/duel-commander.md` | 规则让给 judge;多人 cEDH 让给 cEDH;通用牌张回落 wiki |
 | 赛制策略 | **`cedh-breaker`(待建)** | 竞技指挥官 meta/原型/组合技/pod 博弈 | `concepts/cedh-*` + `branches/strategy/` cEDH 薄层(待建) + `output/周报` | 规则让给 judge;休闲 EDH/非专精回落 wiki |
 | 创作(预留) | `creation-*` | 文章/背景故事 | branches/creation | — |
 | DIY(预留) | `diy-*` | 卡牌设计 | branches/diy | — |
@@ -119,7 +121,7 @@
 - **路由 = 模型自主选择(无系统优先级)**:opencode 把各 skill 的 description 列给模型,由模型读 description 自主 `skill()`。架构要求每个 L3 专家 skill 的 description 含"专属定位 + 让渡边界",mtg-wiki 保持全覆盖并写明"复杂裁定/竞技 meta 让渡专家"。这是**软引导**,非系统保证(SKILL.md 入口规范由维护者把关,见 P8;社区内容块贡献规范见 `.github/CONTRIBUTING.md`)。
 - **裁判单一权威(结构手段)**:规则裁判统一走 `mtg-judge-zh`。mtg-wiki 的"裁判专用"段改为"复杂裁定交 mtg-judge-zh"。更强的做法是 **mtg-wiki 遇规则裁定调用 judge agent** 而非自答——这是结构性单一权威,比纯 description 引导可靠。消灭"裁判实现 3 次"。
 - **跨 skill 让渡**:策略 skill 遇规则裁定不自行裁定,显式指向 judge;非本赛制策略指向对应 breaker 或 wiki。
-- **L2 共享生效**:工具契约/牌名规范/Schema 由 `skill/_shared/mtg-common.md` 经 `instructions` 注入主会话;judge/wiki/各 breaker 共用同一份,改一处全生效。〔待实测〕注入是否达子 agent(见第七节 Q3)。
+- **L2 共享生效**:工具契约/牌名规范/Schema 由 `skill/_shared/mtg-common.md` 经 `instructions` 注入主会话;judge/wiki/各 breaker 共用同一份,改一处全局可见。子 agent 是否继承仍列为待实测项(见第七节 Q3)。
 - **L2 版本治理**:`mtg-common.md` 是全局单点,任何改动影响所有 skill。工具契约/Schema 一旦发布即视为稳定契约,变更须走 P9 提案(限制爆炸半径)。
 - **agent 编排层(存在但不入主图,据用户决策)**:`agent/` 下有 8 个 agent;`mtg-judge-zh` skill 的 pipeline 真实调度其中 6 个(query-decomposer/card-lookup/rule-lookup/ruling-lookup/interaction-analyzer/checker),经 `Agent(subagent_type=...)` 串联。它位于 skill 与工具之间,是 judge 的内部实现,不在 L1–L3 主图中体现;skill↔agent↔tool 的依赖细节由各 skill 自身文档描述。
 
@@ -152,7 +154,7 @@ cedh-breaker **不是独立设计的**,而是从架构推导出来的。但须�
 3. **底层硬伤修复**:Kinnan/Breach/Oracle/座位胜率 4 处错误先修(P2/P4)。
 4. **赛事数据时效与深度**:周报仅 1 份 2026-04、按指挥官统计、无胜率/原型维度 → cedh 必须标注数据时效、不得外推"当前 meta"。
 5. **能力声明收窄为定性**:数据工具链(topdeck_client.py 等)在仓库不存在 → cedh 只承诺**定性分析**(原型/组合技/pod),**不承诺数据驱动定量**(tier/胜率/conversion)。
-6. **先复活对称样板**:`modern-breaker` 当前是死 skill(缺 frontmatter,实测未加载),作"命名样板"前须先补 frontmatter。
+6. **对称样板已复活**:`modern-breaker` 已有合法 frontmatter 并被 `opencode debug skill` 加载;后续新建 `<赛制>-breaker` 仍须通过同一 frontmatter gate。
 
 ### 5.4 拦截闸门(避免带病上线)
 
@@ -174,7 +176,7 @@ cedh-breaker **不是独立设计的**,而是从架构推导出来的。但须�
 
 1. ~~L4 是否独立一层~~ → **已定:降为路由约定**(opencode 无优先级机制,实测确认)。
 2. **全覆盖 + description 软引导**能否让模型可靠选对 skill?会不会专家被通才抢答?(opencode 不做仲裁,只能靠 description 措辞 + 让渡兜底)——需实跑会话观察。
-3. **L2 的 `instructions` 注入是否传递到被调度的子 agent**?文档未载,需 `opencode debug` 实测;若不传递,judge pipeline 的子 agent 需自行引用 `_shared`。(`opencode.json` 目前尚无 `instructions` 字段,需新增。)
+3. **L2 的 `instructions` 注入是否传递到被调度的子 agent**?主会话注入已实测;子 agent 继承性文档未载,需 `opencode debug agent` 或端到端任务实测。若不传递,judge pipeline 的子 agent 需自行引用 `_shared`。
 4. "裁判单一权威":mtg-wiki 裁判段改让渡 + 协调 judge 的 skill/agent 双实现——改动范围与回退?
 5. ~~cEDH 内容是否迁移~~ → **已定:不迁移,概念留 concepts + 建薄分支层**(与 P5 自洽)。
-6. 6 个前置依赖的执行关键路径建议:`instructions 注入实测 → L2 抽取 → 硬伤修复 + 复活 modern-breaker frontmatter → 建薄分支层 → cedh-breaker`。
+6. 6 个前置依赖的执行关键路径建议更新:`子 agent 继承实测 → cEDH 硬伤修复 → cEDH 薄分支层 → cedh-breaker`。`instructions` 主会话注入、L2 抽取、modern-breaker frontmatter 已完成。

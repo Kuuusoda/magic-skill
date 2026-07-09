@@ -97,7 +97,7 @@ skill 层 skill/cedh-breaker/SKILL.md    ← "本分支怎么用这些知识做�
 
 ### C. 集成 reviewer
 - 配置无需改;新 skill 会被自动发现,**前提是带合法 frontmatter**。
-- **modern-breaker 当前无 frontmatter → 实际未注册、是死 skill**;"并存"前必须先修。
+- **modern-breaker 曾无 frontmatter → 实际未注册、是死 skill**;"并存"前必须先修。2026-07-09 复核：已补 frontmatter 并被 `opencode debug skill` 加载。
 - description 须显式反向排除:摩登→modern-breaker、裁定→mtg-judge-zh、休闲/百科→mtg-wiki。
 - 提案 6 条引用路径**逐个 test -e 全部存在**,无悬空。
 - D4 若选替代,README.md/README_EN.md 两处引用须同步改(否则悬空)。
@@ -114,6 +114,6 @@ skill 层 skill/cedh-breaker/SKILL.md    ← "本分支怎么用这些知识做�
 - [ ] D1-D4 在 P1 拍板;采用"保留概念页+薄分支层";D4 定并存
 - [ ] **先修底层素材 4 处硬伤(Kinnan/Breach/座位胜率/Oracle)** —— 优先级最高,独立于 skill
 - [ ] SKILL.md 仅引用真实存在文件;补合法 frontmatter + 反向排除 description
-- [ ] 修复 modern-breaker 缺失 frontmatter
+- [x] 修复 modern-breaker 缺失 frontmatter（2026-07-09 已被 `opencode debug skill` 加载）
 - [ ] 收窄能力声明为"定性分析"(不存在的数据工具链降级为方法论参考)
 - [ ] 定义批准人、log.md 的 skill op 格式、git/PR 工作流

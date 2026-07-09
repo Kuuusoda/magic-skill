@@ -784,3 +784,15 @@ v0.4 收敛，待用户放行实施（§7 七步）。
 更新 `skill/duel-commander-breaker/SKILL.md`:新增大型赛事备战触发、冠军赛压力测试 12 问、缺失信息/风险/下一轮测试题输出要求,并要求 flex slots、known-opponent prep、clock management、threat/answer alignment 等维度。更新 `wiki/branches/strategy/_templates/dc-deck.md`:新增牌表审计、赛事政策、先后手 T1/T2/T3、地基与曲线、Flex Slots、时钟计划。新增 `wiki/branches/strategy/duel-commander/decision-trees/tournament-prep-checklist.md`,并接入法禁 index 与 strategy index。提案推进到 v0.9。
 
 验证通过:`rg` 确认大型赛事/牌表审计/flex/时钟等关键约束落入 skill、模板、决策树与提案;`python3 tests/validation/test_card_resolve.py`;`python3 -m py_compile raw/tools/mtg_wiki/card_resolve.py tests/validation/test_card_resolve.py`。
+
+## [2026-07-09] 落地 | 泛化策略 CI、L2 shared 与 skill 运行时契约
+
+按“设计必须变成运行时约束”的建议继续实施:
+- 新增 `raw/tools/mtg_wiki/lint_strategy_block.py`,将原 cEDH 内容块 lint 泛化到 cEDH + Duel Commander；保留 `lint_cedh_block.py` shim,避免旧 workflow/外部调用断裂。
+- 泛化 `verify_cards.py` 的 strategy 内容目录,使法禁 `duel-commander/**` 的 `commander` / `cards_cited` 不再被静默跳过。
+- 更新 `.github/workflows/cedh-block-validate.yml`:保留 required check 名称,扩展 strategy/runtime paths,加入 skill frontmatter 检查、MTG 工具 py_compile 与 `card_resolve.py` 回归测试。
+- 落地 L2 公共能力层 `skill/_shared/mtg-common.md`,并通过 `opencode.json` 的 `instructions` 注入主会话；`opencode debug config` 解析通过,`opencode debug skill` 实测加载 `duel-commander-breaker`、`modern-breaker`、`mtg-judge-zh`、`mtg-wiki`,且 `_shared` 不被误注册。
+- 删除根级僵尸 `SKILL.md`;修正 README、agent、`mtg-wiki` skill 与 Tameshi Belcher 页面中“内置 37k 本地库/O(1)/不联网”等运行时能力夸大,改为本地索引可选、缺失时 mtgch/Scryfall API 回退。
+- 将 `.github/CONTRIBUTING.md` 与 PR 模板从 cEDH 单赛制扩展为策略内容块(cEDH + 法禁);CODEOWNERS 占位改为仓库 owner `@Kuuusoda`;同步更新架构/修复/法禁提案的当前状态。
+
+验证通过:`python3 raw/tools/mtg_wiki/lint_strategy_block.py --changed origin/main`(0 errors,1 seed warning);`python3 raw/tools/mtg_wiki/verify_cards.py --changed origin/main`(本地索引缺失 neutral skip);`python3 tests/validation/test_card_resolve.py`;`python3 -m py_compile raw/tools/mtg_wiki/card_resolve.py raw/tools/mtg_wiki/lint_strategy_block.py raw/tools/mtg_wiki/lint_cedh_block.py raw/tools/mtg_wiki/verify_cards.py tests/validation/test_card_resolve.py`。

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Force-verify cards cited by a cEDH content block against OFFLINE indices.
+Force-verify cards cited by strategy content blocks against OFFLINE indices.
 
 This is the CARD VERIFICATION gate of the CI (existence + bilingual + official
 CN translation). It is OFFLINE/deterministic: it reads the prebuilt indices, so
@@ -34,7 +34,18 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-CEDH_DIR = "wiki/branches/strategy/cedh"
+STRATEGY_CONTENT_DIRS = (
+    "wiki/branches/strategy/cedh/decks",
+    "wiki/branches/strategy/cedh/meta-snapshots",
+    "wiki/branches/strategy/cedh/decision-trees",
+    "wiki/branches/strategy/cedh/combos",
+    "wiki/branches/strategy/cedh/card-evaluations",
+    "wiki/branches/strategy/duel-commander/decks",
+    "wiki/branches/strategy/duel-commander/meta-snapshots",
+    "wiki/branches/strategy/duel-commander/decision-trees",
+    "wiki/branches/strategy/duel-commander/combos",
+    "wiki/branches/strategy/duel-commander/card-evaluations",
+)
 
 try:
     from utils import normalize_name, ORACLE_CARDS_PATH, CN_NAME_INDEX_PATH, RAW_DATA_DIR
@@ -145,7 +156,7 @@ def changed_files(base_ref):
         cwd=ROOT, capture_output=True, text=True,
     ).stdout
     return [ROOT / l for l in out.splitlines()
-            if l.startswith(f"{CEDH_DIR}/") and l.endswith(".md")]
+            if l.endswith(".md") and any(l.startswith(f"{d}/") for d in STRATEGY_CONTENT_DIRS)]
 
 
 def main(argv=None):
@@ -171,7 +182,7 @@ def main(argv=None):
     if args.changed:
         targets += changed_files(args.changed)
     if not targets:
-        print("no cedh block files to verify")
+        print("no strategy content block files to verify")
         return 0
 
     errors, warns = [], []

@@ -913,7 +913,7 @@ sources: [data/decklists/tameshi-belcher.json, data/analysis/tameshi-belcher_ana
 - **Matchup 实测**：/tmp/matchup_data_v2.json（mtgdecks.net 实测胜率 + 样本量）
 - **Meta 占比**：/tmp/meta_share.json（2026-05-01 modern_meta_report 快照）
 - **卡牌文本**：Scryfall API（2026-05-03 全部 17 张核心牌 + 33 张关联牌核对）
-- **本地卡库**：raw/data/oracle-cards-lite.json（37,230 卡，离线查询备用）
+- **牌张查证**：使用 `raw/tools/mtg_wiki/card_search.py`；本地索引若存在则加速，缺失时使用 mtgch/Scryfall API 兜底
 - **规则文档**：raw/cr/MagicCompRules-2026-04-22.txt（CR 117.6 / 115.7 / 603.1 / 603.7 / 702.62a / 702.127a / 712.8a-d）
 - **mtgch API**：本次未实际调用，全部 33 张关联牌名待二次校对（参见第 10.4 节）
 

@@ -3,7 +3,7 @@ name: cedh-block-validate
 # Runs on every PR (NOT gated by paths) so a required status check always
 # reports — otherwise PRs that don't touch cedh files would hang forever on
 # "Expected — Waiting for status". A paths-filter inside the job decides whether
-# real validation runs; the gate job always reports success/failure.
+# real strategy validation runs; the gate job always reports success/failure.
 on:
   pull_request:
 
@@ -23,23 +23,80 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Detect cedh block changes
+      - name: Detect strategy block changes
         id: filter
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            cedh:
+            strategy:
               - 'wiki/branches/strategy/cedh/**'
+              - 'wiki/branches/strategy/duel-commander/**'
               - 'wiki/branches/strategy/_templates/cedh-*.md'
+              - 'wiki/branches/strategy/_templates/dc-*.md'
+            runtime:
+              - '.github/workflows/**'
+              - 'agent/**'
+              - 'skill/**'
+              - 'raw/tools/mtg_wiki/*.py'
+              - 'tests/**'
+              - 'opencode.json'
 
       - name: Setup Python
-        if: steps.filter.outputs.cedh == 'true'
+        if: steps.filter.outputs.strategy == 'true' || steps.filter.outputs.runtime == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
+      - name: Validate skill frontmatter
+        if: steps.filter.outputs.runtime == 'true'
+        run: |
+          python3 - <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          errors = []
+          for path in sorted(Path("skill").glob("*/SKILL.md")):
+              text = path.read_text(encoding="utf-8")
+              if not text.startswith("---"):
+                  errors.append(f"{path}: missing YAML frontmatter")
+                  continue
+              end = text.find("\n---", 3)
+              if end == -1:
+                  errors.append(f"{path}: unclosed YAML frontmatter")
+                  continue
+              fm = text[3:end]
+              name = re.search(r"^name:\s*(.+?)\s*$", fm, re.M)
+              desc = re.search(r"^description:\s*(.+?)\s*$", fm, re.M)
+              if not name:
+                  errors.append(f"{path}: missing name")
+              elif name.group(1).strip().strip('"\'') != path.parent.name:
+                  errors.append(f"{path}: name `{name.group(1).strip()}` does not match folder `{path.parent.name}`")
+              if not desc or not desc.group(1).strip():
+                  errors.append(f"{path}: missing description")
+          if errors:
+              print("\n".join(f"ERROR: {e}" for e in errors))
+              sys.exit(1)
+          print("skill frontmatter OK")
+          PY
+
+      - name: Compile MTG tool scripts
+        if: steps.filter.outputs.runtime == 'true'
+        run: |
+          python3 -m py_compile \
+            raw/tools/mtg_wiki/card_resolve.py \
+            raw/tools/mtg_wiki/lint_strategy_block.py \
+            raw/tools/mtg_wiki/lint_cedh_block.py \
+            raw/tools/mtg_wiki/verify_cards.py \
+            tests/validation/test_card_resolve.py
+
+      - name: Run resolver regression tests
+        if: steps.filter.outputs.runtime == 'true'
+        run: |
+          python3 tests/validation/test_card_resolve.py
+
       - name: Compute bulk cache date
-        if: steps.filter.outputs.cedh == 'true'
+        if: steps.filter.outputs.strategy == 'true'
         id: bulkmeta
         run: |
           # Key caches by the Scryfall bulk's updated_at date so they refresh
@@ -52,7 +109,7 @@ jobs:
       # Fork PRs can READ the base repo's default-branch cache but cannot write
       # it back. On cache miss we regenerate from Scryfall bulk (unauthenticated).
       - name: Restore card name index
-        if: steps.filter.outputs.cedh == 'true'
+        if: steps.filter.outputs.strategy == 'true'
         id: cache-oracle
         uses: actions/cache/restore@v4
         with:
@@ -62,7 +119,7 @@ jobs:
             oracle-index-
 
       - name: Restore CN name index
-        if: steps.filter.outputs.cedh == 'true'
+        if: steps.filter.outputs.strategy == 'true'
         id: cache-cn
         uses: actions/cache/restore@v4
         with:
@@ -74,28 +131,34 @@ jobs:
       # On miss, regenerate the EN oracle index (oracle_cards ~176MB).
       # The CN index miss is tolerated: verify_cards.py degrades to EN-only.
       - name: Build oracle index on cache miss
-        if: steps.filter.outputs.cedh == 'true' && steps.cache-oracle.outputs.cache-hit != 'true'
+        if: steps.filter.outputs.strategy == 'true' && steps.cache-oracle.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
           cd raw/tools/mtg_wiki
           ORACLE_JSON="$(python3 fetch_bulk.py oracle_cards)"
           MTG_ORACLE_CARDS_PATH="$ORACLE_JSON" python3 -c "import build_indices; build_indices.build_card_indices()"
 
-      - name: Lint cedh blocks (format gate)
-        if: steps.filter.outputs.cedh == 'true'
+      - name: Lint strategy blocks (format gate)
+        if: steps.filter.outputs.strategy == 'true'
         run: |
-          python3 raw/tools/mtg_wiki/lint_cedh_block.py --changed "origin/${{ github.base_ref }}"
+          python3 raw/tools/mtg_wiki/lint_strategy_block.py --changed "origin/${{ github.base_ref }}"
 
       - name: Verify cards (forced offline verification)
-        if: steps.filter.outputs.cedh == 'true'
+        if: steps.filter.outputs.strategy == 'true'
         run: |
           python3 raw/tools/mtg_wiki/verify_cards.py --changed "origin/${{ github.base_ref }}"
 
-      - name: Layer guard (P5 — only cedh paths allowed)
-        if: steps.filter.outputs.cedh == 'true'
+      - name: Layer guard (P5 — community block PRs only)
+        if: steps.filter.outputs.strategy == 'true'
         run: |
           set -euo pipefail
           CHANGED="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          MAINTAINER="$(echo "$CHANGED" | grep -E '^(\.github/|skill/|raw/tools/|raw/data/|CONSTITUTION\.md|wiki/(concepts|entities|sources|synthesis)/)' || true)"
+          if [ -n "$MAINTAINER" ]; then
+            echo "Maintainer-level paths changed; community layer guard is informational only."
+            echo "$MAINTAINER"
+            exit 0
+          fi
           BAD="$(echo "$CHANGED" | grep -E '^wiki/(concepts|entities|sources|synthesis)/' || true)"
           if [ -n "$BAD" ]; then
             echo "ERROR: PR 改动了通用层（P5 禁止社区内容块 PR 触碰）："
@@ -105,4 +168,4 @@ jobs:
           fi
 
       - name: Gate result
-        run: echo "cedh validation gate complete (cedh changed = ${{ steps.filter.outputs.cedh }})"
+        run: echo "strategy validation gate complete (strategy changed = ${{ steps.filter.outputs.strategy }})"
