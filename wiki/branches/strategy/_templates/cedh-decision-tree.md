@@ -4,6 +4,7 @@ updated: YYYY-MM-DD
 type: decision-tree
 block: cedh-decision-tree
 format: cedh
+status: <seed|stub|draft|verified|deprecated>
 tags: [cEDH, 决策树, <主题>]
 commander: ""                               # 通用决策树留空；套牌专属则填
 archetype: ""                               # 适用原型，可留空表示通用

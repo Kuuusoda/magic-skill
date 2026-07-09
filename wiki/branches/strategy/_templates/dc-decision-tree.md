@@ -4,6 +4,7 @@ updated: YYYY-MM-DD
 type: decision-tree
 block: dc-decision-tree
 format: duel-commander
+status: <seed|stub|draft|verified|deprecated>
 tags: [Duel Commander, 法禁, decision-tree]
 commander: ""
 archetype: ""

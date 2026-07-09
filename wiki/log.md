@@ -796,3 +796,25 @@ v0.4 收敛，待用户放行实施（§7 七步）。
 - 将 `.github/CONTRIBUTING.md` 与 PR 模板从 cEDH 单赛制扩展为策略内容块(cEDH + 法禁);CODEOWNERS 占位改为仓库 owner `@Kuuusoda`;同步更新架构/修复/法禁提案的当前状态。
 
 验证通过:`python3 raw/tools/mtg_wiki/lint_strategy_block.py --changed origin/main`(0 errors,1 seed warning);`python3 raw/tools/mtg_wiki/verify_cards.py --changed origin/main`(本地索引缺失 neutral skip);`python3 tests/validation/test_card_resolve.py`;`python3 -m py_compile raw/tools/mtg_wiki/card_resolve.py raw/tools/mtg_wiki/lint_strategy_block.py raw/tools/mtg_wiki/lint_cedh_block.py raw/tools/mtg_wiki/verify_cards.py tests/validation/test_card_resolve.py`。
+
+## [2026-07-09] 落地 | 补 routing 回归、内容成熟度与法禁 banlist 快照（本地未推送）
+
+按“发现的问题逐项修复并校验”继续落地：
+- 同步当前 5 个项目 skill 的事实：`limited-master` 已被 `opencode debug skill` 加载,README 与架构文档从 4 skill 更新为 5 skill,并修正 README 中“本地 37K”运行时措辞。
+- 新增 `tests/routing/mtg_skill_routing_cases.json` 与 `tests/validation/test_skill_routing.py`,覆盖 `duel-commander-breaker`、`limited-master`、`modern-breaker`、`mtg-judge-zh`、`mtg-wiki` 的静态路由回归,并接入 CI runtime gate。
+- 策略内容块新增 `status: seed|stub|draft|verified|deprecated`;`lint_strategy_block.py` 强制校验 status,并对 seed/stub 输出降权 warning。法禁 seed/stub 与 cEDH/DC 模板已补字段。
+- 新增首份 Duel Commander 官方 banlist 快照 `wiki/branches/strategy/duel-commander/banlist/2026-01-26-official.md`。实测官方页面存在 `Banned as Companion`,故快照与模板/lint 从两分类扩展为 `banned`、`banned_as_commander`、`banned_as_companion`。
+- `verify_cards.py` 覆盖 `duel-commander/banlist/`,对官方 banlist 英文牌名做离线存在性验证;结构性禁用保留为 `structural_bans`。
+- `mtg-judge-zh` skill 显式读取并拼入 `skill/_shared/mtg-common.md`,不再只依赖 `opencode.json` instructions 是否传递到子 agent。
+
+验证计划：strategy lint、verify_cards、resolver/routing tests、py_compile、skill frontmatter、opencode skill/config。
+
+## [2026-07-09] fix | 法禁 2099 alias 勘误
+
+修正 `2099` / `spider99` 在 Duel Commander 语境下的默认实体解析：从 `Spider-Man 2099, Miguel O'Hara` 改为 `Spider-Man 2099`。根因是早期内置 alias 依赖 fuzzy/手写假设，没有以当前法禁 meta/牌表聚合实体为依据；这正是实体解析层必须解决的失败模式。同步更新 `card_resolve.py`、法禁 aliases 页、QQ bot 回归测试与提案示例。验证要求：`2099 --format duel-commander --intent commander` 必须选择 `Spider-Man 2099`，且 bot 回答不得出现 Miguel 版本。
+
+## [2026-07-09] 落地 | 实体解析接入赛制 meta evidence gate
+
+将 `2099` 问题从单点 alias 修复升级为系统性约束。新增 `raw/tools/mtg_wiki/format_meta_evidence.py` 与 `raw/data/format_meta_evidence/{duel-commander,cedh,modern}.json` 小型证据索引。`card_resolve.py` 现在会先查赛制 meta evidence,输出 `meta_evidence_found`、`meta_as_of` 与来源;支持 `--require-meta-evidence`,当用户询问当前 meta/占比/强度/Tier/环境/热门度/“现在怎么样”时,没有 meta evidence 不得自动生成当前 meta 结论。QQ bot 的 `resolve_card` 工具与快速回答已接入该参数,`2099` 回答必须带 MTGDecks/MTGTop8 来源摘要。L2 shared、法禁 skill、架构文档同步写入该硬规则。
+
+验证通过:`python3 tests/validation/test_card_resolve.py`;`python3 tests/validation/test_skill_routing.py`;`python3 qq-bot/test_skill_conversation.py`;`python3 -m py_compile raw/tools/mtg_wiki/format_meta_evidence.py raw/tools/mtg_wiki/card_resolve.py qq-bot/plugins/mtg_bot/tools.py qq-bot/plugins/mtg_bot/llm.py tests/validation/test_card_resolve.py tests/validation/test_skill_routing.py qq-bot/test_skill_conversation.py`;`git diff --check`。

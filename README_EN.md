@@ -29,7 +29,7 @@ This project is the **MTG General-Purpose Knowledge Infrastructure**, built and 
 | Synthesis Articles | 6 |
 | Python Tools | 9 |
 | Agent Definitions | 8 |
-| Skill Definitions | 4 |
+| Skill Definitions | 5 |
 | Schema Definitions | 5 |
 | Raw Data Files | 103 |
 
@@ -53,8 +53,10 @@ This project is the **MTG General-Purpose Knowledge Infrastructure**, built and 
 │   │   └── SKILL_EN.md             # English version
 │   ├── modern-breaker/
 │   │   └── SKILL.md                # Modern format metagame analysis skill
-│   └── duel-commander-breaker/
-│       └── SKILL.md                # Duel Commander strategy skill
+│   ├── duel-commander-breaker/
+│   │   └── SKILL.md                # Duel Commander strategy skill
+│   └── limited-master/
+│       └── SKILL.md                # Limited learning, card ratings, and gameplay coaching skill
 ├── schema/                         # JSON Schema definitions
 │   ├── query-plan.json             # Query plan schema
 │   ├── card-info.json              # Card info schema
@@ -178,7 +180,7 @@ python3 raw/tools/mtg_wiki/name_translator.py "Scapeshift"
 # {"name": "Scapeshift", "translated_name": "变境", "source": "cache"}
 ```
 
-Lookup order: local index → mtgch API → Scryfall API. Official translation takes priority.
+Lookup order: optional local index when present → mtgch API → Scryfall API. Official translation takes priority.
 
 ## Browsing the Wiki
 
@@ -194,6 +196,8 @@ Multiple agents collaborate using this Wiki as their shared knowledge base:
 - **mtg-wiki agent** — General-purpose lookup (card search, name translation, strategy consulting)
 - **mtg-judge-zh agent** — Chinese rules judge (multi-agent pipeline: query-decomposer → card/rule/ruling-lookup → interaction-analyzer → checker)
 - **modern-breaker skill** — Modern format metagame analysis and sideboarding decisions
+- **duel-commander-breaker skill** — Duel Commander 1v1 strategy, banlist/rules version boundaries, and tournament prep
+- **limited-master skill** — Limited learning, Draft/Sealed deckbuilding, card ratings, and 17Lands-informed coaching
 
 Agent pipeline execution:
 - **Hardcoded validation**: Each step is validated by `validation.py` for schema correctness

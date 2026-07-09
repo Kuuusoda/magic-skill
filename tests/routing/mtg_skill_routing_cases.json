@@ -1,0 +1,53 @@
+{
+  "cases": [
+    {
+      "id": "duel_commander_2099",
+      "query": "法禁里 2099 这个指挥官现在怎么样？",
+      "expected_skill": "duel-commander-breaker",
+      "signals": ["法禁", "Duel Commander", "DC", "20 血"],
+      "note": "法禁简称/数字实体解析必须优先进入 Duel Commander skill。"
+    },
+    {
+      "id": "duel_commander_tournament_prep",
+      "query": "我要打法国国家冠军赛，这套 DC 牌表怎么备战？",
+      "expected_skill": "duel-commander-breaker",
+      "signals": ["法禁", "Duel Commander", "赛事备战", "banlist_as_of"],
+      "note": "大型法禁赛事备战需要 banlist/rules/event policy 边界。"
+    },
+    {
+      "id": "limited_p1p1",
+      "query": "这一包 P1P1 应该拿什么？要参考 17Lands。",
+      "expected_skill": "limited-master",
+      "signals": ["限制赛", "轮抽", "17Lands", "P1P1"],
+      "note": "限制赛抓位和 17Lands 数据应由 limited-master 承接。"
+    },
+    {
+      "id": "limited_sealed_build",
+      "query": "帮我用这个现开牌池组 40 张。",
+      "expected_skill": "limited-master",
+      "signals": ["限制赛", "现开", "40张", "组牌"],
+      "note": "现开组牌是限制赛学习/实战教练场景。"
+    },
+    {
+      "id": "modern_energy_matchup",
+      "query": "摩登 Boros Energy 打控制怎么换备？",
+      "expected_skill": "modern-breaker",
+      "signals": ["摩登", "Modern", "meta", "备牌"],
+      "note": "摩登 meta/套牌/备牌问题应由 modern-breaker 承接。"
+    },
+    {
+      "id": "judge_rules_interaction",
+      "query": "闪电击能指定有保护的生物吗？请引用规则。",
+      "expected_skill": "mtg-judge-zh",
+      "signals": ["规则", "互动", "CR", "MTR", "IPG"],
+      "note": "规则互动和裁判式答案应由 mtg-judge-zh 承接。"
+    },
+    {
+      "id": "wiki_card_translation",
+      "query": "Scapeshift 的官方中文名是什么？",
+      "expected_skill": "mtg-wiki",
+      "signals": ["牌张", "查询", "中英文", "翻译"],
+      "note": "通用牌张查询/翻译由 mtg-wiki 承接。"
+    }
+  ]
+}

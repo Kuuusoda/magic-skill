@@ -17,7 +17,7 @@
 > **用户决策固化**:
 > ① 法禁 = **Duel Commander**（1v1、起始 20 血、无 21 点指挥官伤害、独立法国禁牌表;官方默认 BO3/50 分钟,主办方可在赛前公告改成其他赛制/时长）。
 > ② archetype 枚举(**7 类**):Aggro / Control / Midrange / Combo / Stax / Voltron / Tempo。
-> ③ 禁牌表 = **单一事实源快照**,由 `fetch_dc_banlist.py` 从 source-registry 记录的官方 B&R 端点自动抓取,定时自动开 PR,维护者 review/merge 后生效;快照带 `banlist_as_of`。
+> ③ 禁牌表 = **单一事实源快照**,由 `fetch_dc_banlist.py` 从 source-registry 记录的官方 B&R 端点自动抓取,定时自动开 PR,维护者 review/merge 后生效;快照带 `banlist_as_of`,并至少区分 `banned` / `banned_as_commander` / `banned_as_companion`。
 > ④ 禁牌**硬校验**:套牌块 cards_cited/commander 命中禁牌 → CI **ERROR 挡合并**。
 > ⑤ skill 命名 **`duel-commander-breaker`**。
 > ⑥ lint **泛化**为 `lint_strategy_block.py`(一份管 cedh + duel-commander + 未来赛制)。
@@ -147,6 +147,7 @@ CI 不应只查牌名与 banlist,还要覆盖法禁玩家最常踩的合法性�
 | `banned` 命中 commander 或 99 | 必须 | 可选 | 必须标注 | 不适用 | ERROR |
 | `banned_as_commander` 命中 commander | 必须 | 可选 | 必须标注 | 不适用 | ERROR |
 | `banned_as_commander` 仅出现在 99 | 允许,但建议标注 | 不适用 | 允许 | 不适用 | INFO |
+| `banned_as_companion` 命中 companion | 必须 | 可选 | 必须标注 | 不适用 | ERROR |
 | companion 合法性 | decklist 完整时校验 | 不适用 | 不适用 | 不适用 | WARN/ERROR |
 | sideboard / outside-the-game | decklist 完整时不得出现 | 不适用 | 涉及时标注不生效 | 不适用 | ERROR |
 | stickers/attractions/acorn/digital-only/ante/dexterity 等结构禁用 | 必须 | 不适用 | 必须 | 不适用 | ERROR |
@@ -216,7 +217,7 @@ python3 raw/tools/mtg_wiki/card_resolve.py "2099" --format duel-commander --inte
   "format": "duel-commander",
   "candidates": [
     {
-      "name": "Spider-Man 2099, Miguel O'Hara",
+      "name": "Spider-Man 2099",
       "match_reason": ["name_contains", "legendary_creature", "duel_legal"],
       "format_signals": ["seen_in_dc_meta_or_content"],
       "confidence": 0.91
@@ -315,7 +316,7 @@ resolver 的实现可以先不复杂:读取 alias 表 + 遍历本地 oracle name
 
 不得在低置信时直接生成策略建议。若用户问题中已有"法禁 meta/占比/指挥官"上下文,可以先给出最可能候选,但必须标注:
 
-> 我按法禁语境将 `2099` 解析为 `Spider-Man 2099, Miguel O'Hara`;若你指另一张牌请纠正。
+> 我按法禁语境将 `2099` 解析为 `Spider-Man 2099`;若你指另一张牌请纠正。
 
 #### 别名表
 
@@ -324,7 +325,7 @@ resolver 的实现可以先不复杂:读取 alias 表 + 遍历本地 oracle name
 ```yaml
 aliases:
   "2099":
-    preferred: "Spider-Man 2099, Miguel O'Hara"
+    preferred: "Spider-Man 2099"
     format: duel-commander
     reason: "DC meta shorthand; commander usage signal"
     as_of: YYYY-MM-DD

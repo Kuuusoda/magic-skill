@@ -47,12 +47,13 @@ ARCHETYPE_ENUM = {
     "duel-commander": {"Aggro", "Control", "Midrange", "Combo", "Stax", "Voltron", "Tempo", ""},
 }
 PAIR_ENUM = {"single", "partner", "partner-with", "friends-forever", "background", ""}
+STATUS_ENUM = {"seed", "stub", "draft", "verified", "deprecated"}
 
 EXHAUSTIVE = {"cedh-combo", "cedh-card-eval", "dc-combo", "dc-card-eval"}
 SUBSET = {"cedh-deck", "dc-deck"}
 EXEMPT = {"cedh-meta", "cedh-decision-tree", "dc-meta", "dc-decision-tree", "dc-banlist"}
 
-BASE_REQUIRED = ["created", "updated", "type", "block", "format", "tags", "sources"]
+BASE_REQUIRED = ["created", "updated", "type", "block", "format", "status", "tags", "sources"]
 REQUIRED_BY_BLOCK = {
     "cedh-deck": ["as_of", "commander", "pair_type", "archetype", "cards_cited"],
     "cedh-meta": ["as_of", "cards_cited"],
@@ -69,7 +70,7 @@ REQUIRED_BY_BLOCK = {
     "dc-card-eval": ["as_of", "rules_as_of", "cards_cited"],
     "dc-banlist": [
         "banlist_as_of", "rules_as_of", "banned", "banned_as_commander",
-        "generated_by", "source_hash",
+        "banned_as_companion", "generated_by", "source_hash",
     ],
 }
 
@@ -190,6 +191,10 @@ def lint_file(path: Path, errors, warns):
     if arch not in ARCHETYPE_ENUM.get(expected_format, {""}):
         err(f"archetype=`{arch}` 不在 format=`{expected_format}` 的枚举 {sorted(ARCHETYPE_ENUM[expected_format])}")
 
+    status = fm.get("status", "")
+    if status not in STATUS_ENUM:
+        err(f"status=`{status}` 不在枚举 {sorted(STATUS_ENUM)}")
+
     if block.endswith("-deck"):
         pt = fm.get("pair_type", "")
         if pt not in PAIR_ENUM:
@@ -200,14 +205,18 @@ def lint_file(path: Path, errors, warns):
             err(f"{df}=`{fm[df]}` 应为 YYYY-MM-DD")
 
     sources = fm.get("sources", [])
+    if status == "verified" and not _as_list(sources):
+        err("status=verified 时 sources 不得为空")
     if block in {"cedh-meta", "dc-meta"} and not _as_list(sources):
-        if "seed" in _tags(fm):
-            warn("Meta seed 允许 sources 为空；正式快照必须补来源")
+        if status in {"seed", "stub"} or "seed" in _tags(fm):
+            warn("Meta seed/stub 允许 sources 为空；正式快照必须补来源")
         else:
             err("Meta 快照必须有 sources（P3 时效数据须标来源）")
+    if status in {"seed", "stub"}:
+        warn(f"status={status} 表示非正式内容；skill 不得把它当作强度/meta/合法性结论")
 
     if block == "dc-banlist":
-        for field in ("banned", "banned_as_commander"):
+        for field in ("banned", "banned_as_commander", "banned_as_companion"):
             if field in fm and not isinstance(fm[field], list):
                 err(f"{field} 必须是 frontmatter list")
 

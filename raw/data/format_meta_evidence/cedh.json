@@ -1,0 +1,72 @@
+{
+  "format": "cedh",
+  "as_of": "2026-07-09",
+  "sources": [
+    {
+      "name": "EDHTop16",
+      "url": "https://edhtop16.com/",
+      "role": "cedh-commander-and-archetype-metagame"
+    },
+    {
+      "name": "TopDeck.gg",
+      "url": "https://topdeck.gg/",
+      "role": "tournament-decklists-and-api"
+    }
+  ],
+  "entities": [
+    {
+      "name": "Blue Farm (Tymna the Weaver / Kraum, Ludevic's Opus)",
+      "entity": "deck",
+      "intents": ["deck", "commander", "meta", "archetype"],
+      "aliases": ["blue farm", "tymna/kraum", "kraum tymna", "tymna kraum"],
+      "confidence": "high",
+      "observed_at": "2026-07-09",
+      "evidence": [
+        {
+          "source": "EDHTop16",
+          "url": "https://edhtop16.com/",
+          "label": "cEDH commander/metagame data tracks Tymna the Weaver / Kraum, Ludevic's Opus as Blue Farm",
+          "observed_at": "2026-07-09"
+        },
+        {
+          "source": "TopDeck.gg",
+          "url": "https://topdeck.gg/",
+          "label": "cEDH tournament decklists commonly classify Tymna/Kraum as Blue Farm",
+          "observed_at": "2026-07-09"
+        }
+      ]
+    },
+    {
+      "name": "Rograkh, Son of Rohgahh / Silas Renn, Seeker Adept",
+      "entity": "deck",
+      "intents": ["deck", "commander", "meta", "archetype"],
+      "aliases": ["rogsi", "rog silas", "rograkh silas"],
+      "confidence": "high",
+      "observed_at": "2026-07-09",
+      "evidence": [
+        {
+          "source": "EDHTop16",
+          "url": "https://edhtop16.com/",
+          "label": "cEDH metagame and tournament pages track Rograkh/Silas as RogSi",
+          "observed_at": "2026-07-09"
+        }
+      ]
+    },
+    {
+      "name": "Tymna the Weaver / Thrasios, Triton Hero",
+      "entity": "deck",
+      "intents": ["deck", "commander", "meta", "archetype"],
+      "aliases": ["tnt", "tymna/thrasios", "tymna thrasios"],
+      "confidence": "medium",
+      "observed_at": "2026-07-09",
+      "evidence": [
+        {
+          "source": "EDHTop16",
+          "url": "https://edhtop16.com/",
+          "label": "cEDH metagame pages track Tymna/Thrasios pairings",
+          "observed_at": "2026-07-09"
+        }
+      ]
+    }
+  ]
+}

@@ -1,13 +1,13 @@
 # MTG Skill 体系架构设计
 
 - 文档地位:**全量万智牌 skill 体系的顶层架构设计**。所有 skill(含未来的 cedh)都是本架构的实例。
-- 版本:v1.2(在 v1.1 基础上落地 L2 shared、确认 4 个 skill 注册、补入 Duel Commander,2026-07-09)
+- 版本:v1.3(在 v1.2 基础上确认 5 个项目 skill 并补入 Limited 学习型 skill,2026-07-09)
 
 ## 地基实测结论(2026-07-09,以 `opencode debug skill` / `opencode debug config` 为权威)
 
 第 1 轮校验曾担心"`./skill` 可能未被加载"。已用 opencode 1.15.6 实测确认:
 
-- ✅ **`skills.paths: ["./skill"]` 生效**:`opencode debug skill` 列出 `duel-commander-breaker`、`modern-breaker`、`mtg-judge-zh`、`mtg-wiki`,location 指向 `skill/<name>/SKILL.md`,确认本仓库 skill 被正常加载。`skills.paths` 是真实配置项,且**递归扫描 `**/SKILL.md`**。
+- ✅ **`skills.paths: ["./skill"]` 生效**:`opencode debug skill` 列出 `duel-commander-breaker`、`limited-master`、`modern-breaker`、`mtg-judge-zh`、`mtg-wiki`,location 指向 `skill/<name>/SKILL.md`,确认本仓库 skill 被正常加载。`skills.paths` 是真实配置项,且**递归扫描 `**/SKILL.md`**。
 - ✅ **`modern-breaker` 已复活**:已出现在 `debug skill` 输出中,不再是死 skill。
 - ✅ **`skill/_shared/` 不会被误注册为 skill**:该目录无 `SKILL.md`,`debug skill` 不列出 `_shared`;公共文档通过 `opencode.json` 的 `instructions` 注入。
 - ✅ **L2 shared 已注入主会话配置**:`opencode debug config` 可解析 `instructions: ["skill/_shared/mtg-common.md"]`。子 agent 是否继承仍需独立实测,但主会话级工具/实体解析契约已可作为共享层生效。
@@ -26,7 +26,7 @@
 | mtg-wiki 全覆盖,与 judge/modern 重叠 | **description 路由引导 + 显式让渡**:mtg-wiki 保持全覆盖通才;专家 skill 靠 description 措辞引导模型在其领域被选中,mtg-wiki 内写明"复杂裁定/竞技 meta 让渡给专家"兜底。注:opencode 无系统级优先级,此为软引导非硬保证 |
 | 规则裁判被实现 3 次 | **单一权威**:一种能力只有一个权威实现,其余引用 |
 | 工具说明/层系统表/牌名规范多处重复 | **公共能力下沉**:共享层只定义一次,skill 引用 |
-| 3 skill vs 2 活跃分支,映射混乱 | **清晰映射**:skill ←→ 分支/赛制 一一对应 |
+| 多个 skill 与分支/场景映射混乱 | **清晰映射**:skill ←→ 分支/赛制/学习场景 一一对应 |
 | 索引未就绪却宣称已打包 | **显式依赖**:架构声明数据/索引为前置层 |
 
 ---
@@ -45,7 +45,7 @@
 │   ├──────────────┬──────────────┬──────────────────────────┤ │
 │   │ 规则裁判类    │ 赛制策略类    │ (预留) 创作/DIY 类        │ │
 │   │ mtg-judge-zh │ <赛制>-breaker│ creation-* / diy-*        │ │
-│   │ (referee)    │ modern/cedh   │                          │ │
+│   │ (referee)    │ limited-master│                          │ │
 │   └──────────────┴──────────────┴──────────────────────────┘ │
 │   〔路由约定〕模型读 description 自主选 skill;无系统优先级。 │
 │   靠 description 措辞引导"专家领域选专家、其余回落 wiki",    │
@@ -57,7 +57,8 @@
 │     已实测主会话配置解析通过;子 agent 继承性仍需单独实测。 │
 │     内容:                                                    │
 │     · 工具契约:card_search / rule_search / name_translator   │
-│       / card_resolve / scryfall_rulings (调用方式只定义一次) │
+│       / card_resolve / format_meta_evidence / scryfall_rulings│
+│       (调用方式只定义一次)                                    │
 │     · 公共规范:牌名双语格式、查证优先、层系统速查、引用格式  │
 │     · 实体解析:简称/绰号/半截名 → 候选列表 + 语境重排        │
 │     · Schema 契约:query-plan/card-info/rule-info/analysis... │
@@ -77,7 +78,7 @@
 - L3 **路由约定(无系统优先级,实测确认)**:mtg-wiki 全覆盖作通才基线;专家 skill(judge/各 breaker)靠 description 措辞引导模型在其领域被选中。重叠问题靠 description 的"专属定位 + 让渡边界"软引导(非系统仲裁),误选时由各 skill 内显式让渡兜底。
 - L2 是**唯一**定义工具/规范/Schema 的地方,落地为 `skill/_shared/mtg-common.md` + `opencode.json` 的 `instructions` 注入;L3 skill 引用而非复制(直接消灭"重复粘贴"病灶)。
 
-### 全局牌名实体解析层(v1.1)
+### 全局牌名实体解析层(v1.2)
 
 `card_search.py` 是单卡详情查询器,不是实体解析器。所有 skill 在遇到短名、数字、绰号、半截英文名、角色名、多版本同名角色时,必须先走 L2 的实体解析契约,再查单卡详情。
 
@@ -87,12 +88,17 @@
 - 摩登:`frog`、`energy`、`belcher`、`amulet`、`scam` 等常指套牌或 archetype,不是单张牌。
 - 裁判问答:用户说"oracle combo"可能是牌名、组合技路径或胜利条件缩写,不能直接查第一张牌。
 
-新增 L2 工具契约:`card_resolve.py`(或 `card_search.py --candidates`)输出候选列表、置信度、重排理由和是否需要追问。L3 skill 只提供赛制语境权重(例如 cEDH pod/meta、法禁 commander/meta、Modern deck archetype),不得各自重写实体解析算法。
+新增 L2 工具契约:
+- `card_resolve.py`(或 `card_search.py --candidates`)输出候选列表、置信度、重排理由和是否需要追问。
+- `format_meta_evidence.py` 查询赛制 meta 证据,把简称/套牌名/指挥官名与 Duel Commander、cEDH、Modern 等赛制的当前聚合实体对齐。
+
+L3 skill 只提供赛制语境权重(例如 cEDH pod/meta、法禁 commander/meta、Modern deck archetype),不得各自重写实体解析算法。
 
 硬规则:
 - 低置信或多候选接近时先追问。
 - 如果根据格式语境自动选择,答案必须写明"我将 X 解析为 Y"。
 - 不得把数据库/API 第一结果当作用户意图。
+- 当用户询问“现在/当前/meta/占比/强度/Tier/环境/热门/怎么样”等赛制问题时,必须要求 meta evidence gate;无 meta evidence 时不得声称当前 meta 结论。
 
 ---
 
@@ -106,11 +112,12 @@
 | 规则裁判 | `mtg-judge-zh` | 规则/互动/合法性/政策裁定 | branches/referee | 策略让给 breaker;非裁定回落 wiki |
 | 赛制策略 | `modern-breaker` | 摩登 meta/套牌/对局 | branches/strategy(摩登) | 规则让给 judge;其它赛制让给对应 breaker |
 | 赛制策略 | `duel-commander-breaker` | Duel Commander/法禁 1v1 竞技策略、禁牌表/规则版本边界、20 血资源判断 | `branches/strategy/duel-commander/` + `concepts/duel-commander.md` | 规则让给 judge;多人 cEDH 让给 cEDH;通用牌张回落 wiki |
+| 限制赛学习/策略 | `limited-master` | 限制赛学习、轮抽/现开组牌、P1P1、单卡评分、17Lands 数据阅读、对局复盘 | `concepts/limited|draft|sealed` + `synthesis/limited-learning-path.md` + `sources/2026-06-22-topdeck-limited-reading-list.md` | 具体牌面/译名回落 wiki;规则判定让给 judge |
 | 赛制策略 | **`cedh-breaker`(待建)** | 竞技指挥官 meta/原型/组合技/pod 博弈 | `concepts/cedh-*` + `branches/strategy/` cEDH 薄层(待建) + `output/周报` | 规则让给 judge;休闲 EDH/非专精回落 wiki |
 | 创作(预留) | `creation-*` | 文章/背景故事 | branches/creation | — |
 | DIY(预留) | `diy-*` | 卡牌设计 | branches/diy | — |
 
-> 切分维度说明(据校验修正):真正的一级维度是**知识分支**(referee/strategy/creation/diy);**赛制**只是 strategy 分支内部的二级切分(modern/cedh)。referee 一个 judge 吃全赛制;creation/diy 无赛制维度。新赛制 = strategy 下加一个 breaker;新分支 = 一级新增。
+> 切分维度说明(据校验修正):真正的一级维度是**知识分支**(referee/strategy/creation/diy);**赛制**只是 strategy 分支内部的二级切分(modern/duel-commander/cedh)。但并非所有 strategy skill 都叫 `<赛制>-breaker`:限制赛是学习/评分/实战教练场景,落为 `limited-master`。referee 一个 judge 吃全赛制;creation/diy 无赛制维度。新赛制 = strategy 下加 breaker 或场景型 skill;新分支 = 一级新增。
 
 **关键决策(据用户)**:mtg-wiki **保持全覆盖**作通才基线,**不收缩为兜底**。专家 skill 通过 description 措辞引导,在其领域被模型引导选中;专家领域之外由 mtg-wiki 接管。注意:opencode **无系统级优先级仲裁**,这是 description 软引导 + 让渡兜底,非系统硬保证(实测确认)。病灶 1 因此**部分缓解而非结构性消除**——彻底消除需用 agent 调用做硬转交(见第四节)。
 

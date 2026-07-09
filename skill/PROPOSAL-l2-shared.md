@@ -19,8 +19,8 @@
 
 **原则：L2 只持"指针 + 操作契约"，事实本体留 L1（概念页）/ `schema/*.json`。** 这是满足 P6 的关键——把"详略差异"误当"分工"会制造二源。
 
-1. **工具契约**：**7 个**脚本的路径、输入/输出约定、调用示例：
-   `card_resolve.py` / `card_search.py` / `name_translator.py` / `rule_search.py` / `scryfall_rulings.py` / `mtgch_name_index.py` / `validation.py`（均在 `./raw/tools/mtg_wiki/`）。L2 是工具路径的**唯一事实源**。
+1. **工具契约**：**8 个**脚本的路径、输入/输出约定、调用示例：
+   `card_resolve.py` / `format_meta_evidence.py` / `card_search.py` / `name_translator.py` / `rule_search.py` / `scryfall_rulings.py` / `mtgch_name_index.py` / `validation.py`（均在 `./raw/tools/mtg_wiki/`）。L2 是工具路径的**唯一事实源**。
 2. **牌名双语规范 + 实体解析契约**：首次「中文（English）」、后续「中文」；必须经 `card_resolve.py` / `card_search.py` / `name_translator.py` 查证，禁凭记忆。短名、数字、绰号、半截牌名、多版本角色名必须先解析候选,不得直接采用单结果 fuzzy。
 3. **层系统**：**只放"何时该查层系统"的操作指引 + `[[concepts/...]]` 指针**；CR 613 的 7 层顺序、613.6 跨层/613.8 从属等**事实本体不在 L2 复制**，唯一权威留概念页（L1）。
    > 注：此举同时收口 `ARCHITECTURE-mtg-skills.md` 把"层系统速查"列入 L2 的张力——以"L2 仅指针、L1 持事实"为准。
@@ -42,11 +42,13 @@
    - `--format modern --intent deck|card|archetype`
    - `--format judge --intent card|rule|interaction`
 5. 低置信或候选接近时先追问;自动选择时必须说明"我将 X 解析为 Y"。
+6. 当用户询问当前 meta、占比、强度、Tier、热门度或“现在怎么样”时,必须要求 `card_resolve.py --require-meta-evidence` 或调用 `format_meta_evidence.py`。没有 meta evidence 时,不得把 alias/wiki/API fuzzy 结果当作当前 meta 结论。
 
 候选重排的公共信号:
 - alias 命中;
 - 官方名/中文译名匹配;
 - wiki 内容块命中(标题/frontmatter 高于正文);
+- 赛制 meta evidence 命中(优先级高于 alias/API fuzzy);
 - 格式合法性;
 - 角色适配(intent=commander 时传奇且可作指挥官加权);
 - banlist/禁用状态;

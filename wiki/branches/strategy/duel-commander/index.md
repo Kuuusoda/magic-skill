@@ -1,6 +1,6 @@
 ---
 created: 2026-07-08
-updated: 2026-07-08
+updated: 2026-07-09
 type: concept
 tags: [Duel Commander, 法禁, strategy, index]
 sources: []
@@ -20,6 +20,7 @@ sources: []
 ## 导航
 
 - [[duel-commander/meta-snapshots/2026-07-08-dc-seed|最小环境快照占位]]
+- [[duel-commander/banlist/2026-01-26-official|官方禁牌表快照（2026-01-26）]]
 - [[duel-commander/decks/kess-dissident-mage|Kess, Dissident Mage 待补套牌块]]
 - [[duel-commander/decks/niv-mizzet-parun|Niv-Mizzet, Parun 待补套牌块]]
 - [[duel-commander/decision-trees/tournament-prep-checklist|大型赛事备战检查]]
@@ -40,9 +41,10 @@ sources: []
 
 ## 内容要求
 
-- deck/meta 块必须同时标注 `as_of`、`banlist_as_of`、`rules_as_of`。
+- deck/meta 块必须同时标注 `status`、`as_of`、`banlist_as_of`、`rules_as_of`。
 - 强弱、Tier、占比必须绑定来源；没有样本只能写观察假设。
 - 禁牌表不得散落在套牌或单卡页中重复维护。
+- `seed` / `stub` 只可作为导航或待补结构，不得作为强度、meta 或合法性结论。
 - 短名、数字、俗称、半截名先用 `card_resolve.py --format duel-commander` 解析。
 - 大型赛事备战必须先确认赛事日期、规则版本、禁牌表版本和 event policy；缺少这些信息时不得确认牌表合法。
 

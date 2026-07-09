@@ -88,12 +88,18 @@ jobs:
             raw/tools/mtg_wiki/lint_strategy_block.py \
             raw/tools/mtg_wiki/lint_cedh_block.py \
             raw/tools/mtg_wiki/verify_cards.py \
-            tests/validation/test_card_resolve.py
+            tests/validation/test_card_resolve.py \
+            tests/validation/test_skill_routing.py
 
       - name: Run resolver regression tests
         if: steps.filter.outputs.runtime == 'true'
         run: |
           python3 tests/validation/test_card_resolve.py
+
+      - name: Run skill routing regression tests
+        if: steps.filter.outputs.runtime == 'true'
+        run: |
+          python3 tests/validation/test_skill_routing.py
 
       - name: Compute bulk cache date
         if: steps.filter.outputs.strategy == 'true'

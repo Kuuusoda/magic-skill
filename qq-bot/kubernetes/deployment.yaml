@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mtg-bot-data
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-storage
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mtg-qq-bot
+  namespace: default
+  labels:
+    app: mtg-qq-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mtg-qq-bot
+  template:
+    metadata:
+      labels:
+        app: mtg-qq-bot
+    spec:
+      containers:
+        - name: mtg-qq-bot
+          image: crpi-9zglbcrscpwnfi75.cn-hangzhou.personal.cr.aliyuncs.com/beework/magicskillstop:v1.0.0beta
+          imagePullPolicy: Always
+          ports:
+            - name: webui
+              containerPort: 6099
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /app/.config/QQ
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          livenessProbe:
+            tcpSocket:
+              port: 6099
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 6099
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mtg-bot-data
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mtg-qq-bot
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+    - name: webui
+      port: 6099
+      targetPort: 6099
+      nodePort: 30099
+      protocol: TCP
+  selector:
+    app: mtg-qq-bot

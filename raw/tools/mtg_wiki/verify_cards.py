@@ -45,6 +45,7 @@ STRATEGY_CONTENT_DIRS = (
     "wiki/branches/strategy/duel-commander/decision-trees",
     "wiki/branches/strategy/duel-commander/combos",
     "wiki/branches/strategy/duel-commander/card-evaluations",
+    "wiki/branches/strategy/duel-commander/banlist",
 )
 
 try:
@@ -72,13 +73,13 @@ def load_json(path):
         return None
 
 
-def parse_cards_cited_and_commander(text):
-    """Pull cards_cited list + commander from frontmatter (minimal parse)."""
+def parse_verification_targets(text):
+    """Pull bilingual card targets and English-only banlist targets from frontmatter."""
     if not text.startswith("---"):
-        return [], ""
+        return [], []
     end = text.find("\n---", 3)
     body = text[3:end] if end != -1 else ""
-    cards, commander, cur = [], "", None
+    cards, commander, english_only, cur = [], "", [], None
     for raw in body.splitlines():
         line = raw.rstrip()
         if re.match(r"^\s+-\s+", line) and cur == "cards_cited":
@@ -86,6 +87,12 @@ def parse_cards_cited_and_commander(text):
             item = re.sub(r"\s+#.*$", "", item).strip().strip("\"'")
             if item:
                 cards.append(item)
+            continue
+        if re.match(r"^\s+-\s+", line) and cur in {"banned", "banned_as_commander", "banned_as_companion"}:
+            item = re.sub(r"^\s+-\s+", "", line)
+            item = re.sub(r"\s+#.*$", "", item).strip().strip("\"'")
+            if item:
+                english_only.append(item)
             continue
         m = re.match(r"^([A-Za-z0-9_]+):\s*(.*)$", line)
         if not m:
@@ -97,7 +104,13 @@ def parse_cards_cited_and_commander(text):
         if cur == "cards_cited" and val.startswith("[") and val.endswith("]"):
             inner = val[1:-1].strip()
             cards += [x.strip().strip("\"'") for x in inner.split(",") if x.strip()]
-    return cards, commander
+        if cur in {"banned", "banned_as_commander", "banned_as_companion"} and val.startswith("[") and val.endswith("]"):
+            inner = val[1:-1].strip()
+            english_only += [x.strip().strip("\"'") for x in inner.split(",") if x.strip()]
+    bilingual = list(cards)
+    if commander:
+        bilingual.append(commander)
+    return bilingual, english_only
 
 
 def split_bilingual(entry):
@@ -134,20 +147,29 @@ def verify_entry(entry, name_index, cn_index, errors, warns, rel):
                 )
 
 
+def verify_english_entry(entry, name_index, warns, rel):
+    """Verify an English-only official source entry such as a banlist card name."""
+    for ef in [e.strip() for e in entry.split("//")]:
+        key = normalize_name(ef)
+        if key not in name_index:
+            warns.append(
+                f"WARN: {rel}: 英文名 `{ef}` 不在离线 Oracle 索引（可能是新牌/特殊物件/索引滞后）"
+            )
+
+
 def verify_file(path, name_index, cn_index, errors, warns):
     rel = path.relative_to(ROOT).as_posix() if path.is_absolute() else path.as_posix()
     if not path.exists():
         errors.append(f"ERROR: {rel}: 文件不存在"); return
     text = path.read_text(encoding="utf-8")
-    cards, commander = parse_cards_cited_and_commander(text)
-    targets = list(cards)
-    if commander:
-        targets.append(commander)
-    if not targets:
+    bilingual_targets, english_targets = parse_verification_targets(text)
+    if not bilingual_targets and not english_targets:
         return  # nothing to verify (e.g. decision-tree with empty cards_cited)
-    for entry in targets:
+    for entry in bilingual_targets:
         # commander may itself be "A // B"; reuse same verifier
         verify_entry(entry, name_index, cn_index, errors, warns, rel)
+    for entry in english_targets:
+        verify_english_entry(entry, name_index, warns, rel)
 
 
 def changed_files(base_ref):

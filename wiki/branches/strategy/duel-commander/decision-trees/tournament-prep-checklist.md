@@ -4,6 +4,7 @@ updated: 2026-07-08
 type: decision-tree
 block: dc-decision-tree
 format: duel-commander
+status: draft
 tags: [Duel Commander, 法禁, tournament-prep, decision-tree]
 commander: ""
 archetype: ""
@@ -87,4 +88,3 @@ cards_cited: []
 2. 不能确认的合法性点。
 3. 最高风险的 3 个对局/构筑问题。
 4. 下一轮测试的 5 个具体问题。
-

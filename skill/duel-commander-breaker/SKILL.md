@@ -38,6 +38,14 @@ python3 ./raw/tools/mtg_wiki/card_resolve.py "squee/slimefoot" --format duel-com
 - `needs_clarification=true`：列候选并追问。
 - 自动选择时说明“我按法禁语境将 X 解析为 Y”。
 - 不得把 `card_search.py` 的第一个 fuzzy 结果当作用户意图。
+- 当用户问当前 meta、占比、强度、Tier、热门度或“现在怎么样”时，必须使用 meta evidence gate：
+
+```bash
+python3 ./raw/tools/mtg_wiki/card_resolve.py "2099" --format duel-commander --intent commander --require-meta-evidence
+python3 ./raw/tools/mtg_wiki/format_meta_evidence.py "2099" --format duel-commander --intent commander
+```
+
+- 有 meta evidence 时，回答中标注来源与 `as_of`；无 meta evidence 时，不得把 alias 或 fuzzy 结果当成当前法禁 meta 结论。
 
 ### Step 1: 读取法禁入口
 
@@ -87,10 +95,11 @@ wiki/branches/strategy/duel-commander/rules/*.md
 回答必须标注：
 
 - `as_of`：策略/样本时效。
+- `status`：内容成熟度（`seed/stub/draft/verified/deprecated`）。
 - `banlist_as_of`：合法性依据的禁牌表版本。
 - `rules_as_of`：规则快照版本。
 
-如果只读到种子 stub 或占位快照，必须明确说明“本库尚无足够法禁策略资料”。
+如果只读到 `seed` / `stub` 或占位快照，必须明确说明“本库尚无足够法禁策略资料”，不得输出强度、Tier、占比、胜率或可参赛合法性结论。
 
 ### Step 4: 分析维度
 
@@ -116,7 +125,7 @@ wiki/branches/strategy/duel-commander/rules/*.md
 
 1. 你按哪个赛事日期、banlist、rules 和 event policy 准备？
 2. 你的牌表是否完整到 100 张，是否含 companion、outside-the-game、贴纸/景点/acorn/digital-only 等结构风险？
-3. 你的 commander 或 99 是否触及 `banned` / `banned_as_commander`？
+3. 你的 commander、99 或 companion 是否触及 `banned` / `banned_as_commander` / `banned_as_companion`？
 4. 前三回合计划是什么：先手、后手分别要做什么？
 5. 7 张、6 张、5 张起手的最低 keep 标准是什么？
 6. 对 Aggro、Control、Midrange、Combo、Stax、Tempo 分别有哪些不可输的关键回合？

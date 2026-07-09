@@ -43,7 +43,7 @@ Duel Commander 的 Issue 表单与 `render_dc_issue.py` 仍未落地；法禁内
 | 法禁单卡评估 `dc-card-eval` | `duel-commander/card-evaluations/<slug>.md` | concept | **穷举（主卡+提及牌）** |
 | 法禁禁牌快照 `dc-banlist` | `duel-commander/banlist/YYYY-MM-DD-<slug>.md` | synthesis | 不适用；维护者级来源快照 |
 
-通用 frontmatter 契约字段：`created/updated/type/block/format/tags/commander/archetype/sources/as_of/cards_cited`（套牌块另含 `pair_type`）。所有法禁内容块还应标注 `rules_as_of`；法禁 deck/meta 还需 `banlist_as_of` 与 `match_policy`，涉及赛事规则覆盖时补 `event_policy_source`。
+通用 frontmatter 契约字段：`created/updated/type/block/format/status/tags/commander/archetype/sources/as_of/cards_cited`（套牌块另含 `pair_type`）。`status` 取 `seed|stub|draft|verified|deprecated`：seed/stub 不能作为强度、meta 或合法性结论；verified 必须有来源。所有法禁内容块还应标注 `rules_as_of`；法禁 deck/meta 还需 `banlist_as_of` 与 `match_policy`，涉及赛事规则覆盖时补 `event_policy_source`。
 
 ---
 
@@ -64,6 +64,7 @@ CI 红时报告会逐条指出问题（含官方正确牌名）；改完推送�
 - **不编造**牌张/规则/数据/"必胜"策略（宪法 P2/P4）。
 - **数据标时效**：meta/占比类必填 `as_of` + `sources`，标明定性 vs 定量，不外推"当前"（P3）。
 - **法禁版本边界**：法禁 deck/meta 必须说明所依据的 `banlist_as_of`；问合法性或赛前审计时不得用“最新”倒推旧赛事。
+- **法禁禁牌分类**：法禁禁牌快照至少区分 `banned`、`banned_as_commander`、`banned_as_companion`；行侣合法性不能只看 commander/99。
 - **来源合规**：`sources` 可公开访问、禁整段复制他人正文（见 CODE_OF_CONDUCT）。
 
 ---

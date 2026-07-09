@@ -4,6 +4,7 @@ updated: 2026-07-08
 type: synthesis
 block: dc-deck
 format: duel-commander
+status: stub
 tags: [Duel Commander, 法禁, 套牌, Control, Combo]
 commander: "尼米捷，弈灵龙（Niv-Mizzet, Parun）"
 pair_type: single
@@ -39,4 +40,3 @@ cards_cited:
 ## 解析提示
 
 用户说 `niv` 时应列出或按语境重排 Niv-Mizzet 系候选；在法禁指挥官语境下，当前别名表优先提示 Niv-Mizzet, Parun，但低置信时需要追问。
-
