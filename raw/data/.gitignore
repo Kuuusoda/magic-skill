@@ -10,3 +10,5 @@ default-cards*.json
 # maintainer-refreshed via PR) and this ignore file itself.
 !.gitignore
 !cn_name_index.json
+!format_meta_evidence/
+!format_meta_evidence/*.json

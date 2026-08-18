@@ -4,6 +4,7 @@ updated: YYYY-MM-DD
 type: synthesis
 block: dc-meta
 format: duel-commander
+status: <seed|stub|draft|verified|deprecated>
 tags: [Duel Commander, 法禁, meta, 环境快照]
 commander: ""
 archetype: ""

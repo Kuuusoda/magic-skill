@@ -1,0 +1,40 @@
+{
+  "format": "duel-commander",
+  "as_of": "2026-07-09",
+  "sources": [
+    {
+      "name": "MTGDecks Duel Commander",
+      "url": "https://mtgdecks.net/Duel-Commander",
+      "role": "decklist-archetype-aggregation"
+    },
+    {
+      "name": "MTGTop8 Duel Commander",
+      "url": "https://www.mtgtop8.com/format?f=EDH",
+      "role": "tournament-results"
+    }
+  ],
+  "entities": [
+    {
+      "name": "Spider-Man 2099",
+      "entity": "card",
+      "intents": ["commander", "deck", "meta", "card"],
+      "aliases": ["2099", "spider99", "spider-man 2099"],
+      "confidence": "high",
+      "observed_at": "2026-07-09",
+      "evidence": [
+        {
+          "source": "MTGDecks",
+          "url": "https://mtgdecks.net/Duel-Commander/spider-man-2099",
+          "label": "Spider-Man 2099 Duel-Commander decks",
+          "observed_at": "2026-07-09"
+        },
+        {
+          "source": "MTGTop8",
+          "url": "https://www.mtgtop8.com/search?MD_check=1&SB_check=1&cards=Spider-Man+2099",
+          "label": "Duel Commander results list Spider-Man 2099 as the commander/archetype",
+          "observed_at": "2026-07-09"
+        }
+      ]
+    }
+  ]
+}

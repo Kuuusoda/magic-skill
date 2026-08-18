@@ -1,0 +1,87 @@
+{
+  "format": "modern",
+  "as_of": "2026-07-09",
+  "sources": [
+    {
+      "name": "MTGDecks Modern",
+      "url": "https://mtgdecks.net/Modern",
+      "role": "decklist-archetype-aggregation"
+    },
+    {
+      "name": "MTGTop8 Modern",
+      "url": "https://www.mtgtop8.com/format?f=MO",
+      "role": "tournament-results"
+    },
+    {
+      "name": "MTGGoldfish Modern Metagame",
+      "url": "https://www.mtggoldfish.com/metagame/modern",
+      "role": "metagame-archetype-aggregation"
+    }
+  ],
+  "entities": [
+    {
+      "name": "Dimir Frog",
+      "entity": "deck",
+      "intents": ["deck", "meta", "archetype"],
+      "aliases": ["frog", "ub frog", "dimir frog"],
+      "confidence": "medium",
+      "observed_at": "2026-07-09",
+      "evidence": [
+        {
+          "source": "MTGDecks",
+          "url": "https://mtgdecks.net/Modern",
+          "label": "Modern archetype aggregation includes Dimir Frog/Frog shorthand",
+          "observed_at": "2026-07-09"
+        }
+      ]
+    },
+    {
+      "name": "Boros Energy",
+      "entity": "deck",
+      "intents": ["deck", "meta", "archetype"],
+      "aliases": ["energy", "boros energy", "rw energy"],
+      "confidence": "high",
+      "observed_at": "2026-07-09",
+      "evidence": [
+        {
+          "source": "MTGGoldfish",
+          "url": "https://www.mtggoldfish.com/metagame/modern",
+          "label": "Modern metagame pages track Boros Energy as a major archetype",
+          "observed_at": "2026-07-09"
+        }
+      ]
+    },
+    {
+      "name": "Tameshi Belcher",
+      "entity": "deck",
+      "intents": ["deck", "meta", "archetype"],
+      "aliases": ["belcher", "tameshi belcher"],
+      "confidence": "medium",
+      "observed_at": "2026-07-09",
+      "evidence": [
+        {
+          "source": "MTGDecks",
+          "url": "https://mtgdecks.net/Modern",
+          "label": "Modern decklist aggregation includes Belcher/Tameshi Belcher archetypes",
+          "observed_at": "2026-07-09"
+        }
+      ]
+    },
+    {
+      "name": "Amulet Titan",
+      "entity": "deck",
+      "intents": ["deck", "meta", "archetype"],
+      "aliases": ["amulet", "amulet titan"],
+      "confidence": "high",
+      "observed_at": "2026-07-09",
+      "evidence": [
+        {
+          "source": "MTGTop8",
+          "url": "https://www.mtgtop8.com/format?f=MO",
+          "label": "Modern tournament result pages track Amulet Titan as an archetype",
+          "observed_at": "2026-07-09"
+        }
+      ]
+    }
+  ]
+}

@@ -4,6 +4,7 @@ updated: YYYY-MM-DD
 type: synthesis
 block: dc-deck
 format: duel-commander
+status: <seed|stub|draft|verified|deprecated>
 tags: [Duel Commander, 法禁, 套牌, <原型>]
 commander: "<主将中文（English）>"
 pair_type: <single|partner|partner-with|friends-forever|background>

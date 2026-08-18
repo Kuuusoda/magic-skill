@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mtg-bot:
+    build:
+      context: ../../
+      dockerfile: qq-bot/docker/Dockerfile
+    image: mtg-qq-bot:latest
+    container_name: mtg-qq-bot
+    restart: unless-stopped
+
+    environment:
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
+      - DASHSCOPE_MODEL=${DASHSCOPE_MODEL:-qwen-max}
+      - TZ=Asia/Shanghai
+
+    ports:
+      - "8080:8080"  # NoneBot2 WebSocket
+      - "6099:6099"  # NapCat WebUI (扫码登录)
+
+    volumes:
+      # 持久化 QQ 登录状态
+      - napcat-data:/app/napcat/NapCat/data
+      # 可选: 挂载本地知识库 (开发时使用)
+      # - ../../wiki:/app/wiki:ro
+      # - ../../raw:/app/raw:ro
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  napcat-data:
+    driver: local

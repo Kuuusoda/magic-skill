@@ -15,7 +15,7 @@ metadata:
 
 ## Purpose
 
-Encyclopedic MTG assistant covering **rules, cards, formats, strategy, and lore** in five dimensions. Core advantage is the local knowledge base — 187 wiki pages, 37,230-card Oracle database, and complete bilingual CR/MTR/IPG rule documents.
+Encyclopedic MTG assistant covering **rules, cards, formats, strategy, and lore** in five dimensions. Core advantage is the local wiki, complete bilingual CR/MTR/IPG documents, and mtgch/Scryfall lookup tools. Local card indices are optional acceleration; when absent, lookups fall back to APIs.
 
 ## Knowledge Base Structure
 
@@ -107,7 +107,7 @@ python3 ./raw/tools/mtg_wiki/name_translator.py "Lightning Bolt"
 API priority:
 1. mtgch API (`https://mtgch.com/api/v1/`) — Chinese preferred
 2. Scryfall API (`https://api.scryfall.com/`) — English primary
-3. Local 37k Oracle database — offline exact match
+3. Local Oracle indices — optional offline acceleration; API fallback when absent
 
 ## Layer System Reference (CR 613)
 

@@ -4,6 +4,7 @@ updated: YYYY-MM-DD
 type: concept
 block: dc-card-eval
 format: duel-commander
+status: <seed|stub|draft|verified|deprecated>
 tags: [Duel Commander, 法禁, 单卡评估]
 commander: ""
 archetype: ""

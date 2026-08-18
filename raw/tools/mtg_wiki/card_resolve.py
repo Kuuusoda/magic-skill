@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 import card_search
+import format_meta_evidence
 from utils import PROJECT_ROOT, normalize_name, mtgch_get, scryfall_get
 
 
@@ -50,8 +51,8 @@ FORMAT_DIRS = {
 
 BUILTIN_ALIASES: dict[str, dict[str, Any]] = {
     # Duel Commander / commander shorthand observed in local tests.
-    "2099": {"name": "Spider-Man 2099, Miguel O'Hara", "formats": ["duel-commander"], "intents": ["commander", "deck", "card"]},
-    "spider99": {"name": "Spider-Man 2099, Miguel O'Hara", "formats": ["duel-commander"], "intents": ["commander", "deck", "card"]},
+    "2099": {"name": "Spider-Man 2099", "formats": ["duel-commander"], "intents": ["commander", "deck", "card"]},
+    "spider99": {"name": "Spider-Man 2099", "formats": ["duel-commander"], "intents": ["commander", "deck", "card"]},
     "phelia": {"name": "Phelia, Exuberant Shepherd", "formats": ["duel-commander", "modern"], "intents": ["commander", "deck", "card"]},
     "kess": {"name": "Kess, Dissident Mage", "formats": ["duel-commander", "cedh"], "intents": ["commander", "deck", "card"]},
     "niv": {"name": "Niv-Mizzet, Parun", "formats": ["duel-commander"], "intents": ["commander", "deck", "card"]},
@@ -86,6 +87,8 @@ class Candidate:
     warnings: list[str] = field(default_factory=list)
     details: dict[str, Any] | None = None
     wiki_hits: list[str] = field(default_factory=list)
+    meta_evidence: list[dict[str, Any]] = field(default_factory=list)
+    meta_as_of: str = ""
 
     def add(self, points: float, reason: str):
         self.score += points
@@ -138,6 +141,11 @@ def alias_candidates(query: str, fmt: str, intent: str, candidates: dict[str, Ca
     add_alias_candidate(info, candidates, fmt, intent, "exact_alias", 100)
 
 
+def meta_evidence_candidates(query: str, fmt: str, intent: str, candidates: dict[str, Candidate]):
+    result = format_meta_evidence.resolve_meta_evidence(query, fmt, intent)
+    apply_meta_result(candidates, result, reason="meta_query_match")
+
+
 def contained_alias_candidates(norm_query: str, aliases: dict[str, dict[str, Any]], fmt: str, intent: str, candidates: dict[str, Candidate]):
     """Find aliases inside compound interaction queries like 'breach LED'."""
     if len(norm_query) < 5:
@@ -159,6 +167,61 @@ def add_alias_candidate(info: dict[str, Any], candidates: dict[str, Candidate], 
         cand.add(15, "format_alias_match")
     if intent in info.get("intents", []) or not info.get("intents"):
         cand.add(10, "intent_alias_match")
+
+
+def apply_meta_evidence_to_candidates(query: str, fmt: str, intent: str, candidates: dict[str, Candidate]):
+    result = format_meta_evidence.resolve_meta_evidence(
+        query,
+        fmt,
+        intent,
+        candidates=[cand.name for cand in candidates.values()],
+    )
+    apply_meta_result(candidates, result, reason="format_meta_evidence")
+
+
+def apply_meta_result(candidates: dict[str, Candidate], result: dict[str, Any], reason: str):
+    as_of = result.get("as_of", "")
+    for match in result.get("matches", []):
+        name = match.get("name")
+        if not name:
+            continue
+        cand = merge_candidate(candidates, name, match.get("entity", "card"))
+        cand.add(match.get("score", 0), reason)
+        cand.meta_as_of = cand.meta_as_of or as_of
+        compact = compact_meta_match(match, as_of, result.get("stale", True))
+        if not has_same_meta_sources(cand.meta_evidence, compact):
+            cand.meta_evidence.append(compact)
+        if result.get("stale"):
+            cand.warn("meta_evidence_stale")
+
+
+def compact_meta_match(match: dict[str, Any], as_of: str, stale: bool) -> dict[str, Any]:
+    return {
+        "as_of": as_of,
+        "stale": stale,
+        "confidence": match.get("confidence"),
+        "matched_by": match.get("matched_by", []),
+        "observed_at": match.get("observed_at", ""),
+        "sources": [
+            {
+                "source": e.get("source"),
+                "url": e.get("url"),
+                "label": e.get("label"),
+                "observed_at": e.get("observed_at"),
+            }
+            for e in match.get("evidence", [])[:3]
+        ],
+    }
+
+
+def has_same_meta_sources(existing: list[dict[str, Any]], new_item: dict[str, Any]) -> bool:
+    new_key = meta_sources_key(new_item)
+    return any(meta_sources_key(item) == new_key for item in existing)
+
+
+def meta_sources_key(item: dict[str, Any]) -> tuple[str, tuple[str, ...]]:
+    urls = tuple(sorted(source.get("url", "") for source in item.get("sources", []) if source.get("url")))
+    return item.get("as_of", ""), urls
 
 
 def paths_for_format(fmt: str) -> list[Path]:
@@ -339,7 +402,7 @@ def enrich_and_score(candidates: dict[str, Candidate], query: str, fmt: str, int
 
         if is_legendary_candidate(type_line):
             cand.add(30 if intent in {"commander", "deck"} else 8, "legendary_candidate")
-        elif intent == "commander" and cand.entity == "card":
+        elif type_line and intent == "commander" and cand.entity == "card":
             cand.add(-35, "not_likely_commander")
             cand.warn("not_legendary_for_commander_intent")
 
@@ -370,12 +433,21 @@ def is_legendary_candidate(type_line: str) -> bool:
     return "Legendary" in type_line and ("Creature" in type_line or "Planeswalker" in type_line)
 
 
-def resolve(query: str, fmt: str, intent: str, limit: int = 5, allow_api: bool = True) -> dict[str, Any]:
+def resolve(
+    query: str,
+    fmt: str,
+    intent: str,
+    limit: int = 5,
+    allow_api: bool = True,
+    require_meta_evidence: bool = False,
+) -> dict[str, Any]:
     candidates: dict[str, Candidate] = {}
+    meta_evidence_candidates(query, fmt, intent, candidates)
     alias_candidates(query, fmt, intent, candidates)
     wiki_context_candidates(query, fmt, intent, candidates)
     if allow_api and should_expand_with_api(candidates):
         api_candidates(query, candidates)
+    apply_meta_evidence_to_candidates(query, fmt, intent, candidates)
     enrich_and_score(candidates, query, fmt, intent, allow_api=allow_api)
 
     ranked = sorted(candidates.values(), key=lambda c: c.score, reverse=True)
@@ -394,6 +466,9 @@ def resolve(query: str, fmt: str, intent: str, limit: int = 5, allow_api: bool =
         # Deck/archetype aliases are often exact enough.
         if "exact_alias" in top[0].reasons and top[0].score >= 80:
             needs_clarification = False
+        if require_meta_evidence and not top[0].meta_evidence:
+            top[0].warn("meta_evidence_required_but_missing")
+            needs_clarification = True
 
     return {
         "query": query,
@@ -402,6 +477,8 @@ def resolve(query: str, fmt: str, intent: str, limit: int = 5, allow_api: bool =
         "selected": selected,
         "components": components if components else [],
         "needs_clarification": needs_clarification,
+        "meta_evidence_required": require_meta_evidence,
+        "meta_evidence_found": bool(top and top[0].meta_evidence),
         "candidates": [candidate_to_dict(c) for c in top],
     }
 
@@ -428,6 +505,9 @@ def candidate_to_dict(cand: Candidate) -> dict[str, Any]:
     }
     if cand.wiki_hits:
         out["wiki_hits"] = cand.wiki_hits[:5]
+    if cand.meta_evidence:
+        out["meta_as_of"] = cand.meta_as_of
+        out["meta_evidence"] = cand.meta_evidence[:3]
     if cand.details:
         out["type_line"] = cand.details.get("type_line")
         out["legalities"] = {
@@ -445,8 +525,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--intent", default="card")
     parser.add_argument("--limit", type=int, default=5)
     parser.add_argument("--no-api", action="store_true", help="Do not call external APIs; use aliases/wiki context only.")
+    parser.add_argument("--require-meta-evidence", action="store_true", help="Require selected candidate to have format meta evidence.")
     args = parser.parse_args(argv)
-    result = resolve(args.query, args.format, args.intent, args.limit, allow_api=not args.no_api)
+    result = resolve(
+        args.query,
+        args.format,
+        args.intent,
+        args.limit,
+        allow_api=not args.no_api,
+        require_meta_evidence=args.require_meta_evidence,
+    )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 

@@ -1,0 +1,26 @@
+{
+  "network": {
+    "httpServers": [],
+    "httpClients": [],
+    "websocketServers": [],
+    "websocketClients": [
+      {
+        "name": "nonebot",
+        "host": "127.0.0.1",
+        "port": 8080,
+        "enable": true,
+        "reconnectInterval": 5000,
+        "token": "",
+        "debug": false
+      }
+    ]
+  },
+  "musicSignUrl": "",
+  "enableLocalFile2Url": false,
+  "parseMultMsg": true,
+  "debug": false,
+  "heartInterval": 30000,
+  "messagePostFormat": "array",
+  "reportSelfMessage": false,
+  "token": ""
+}

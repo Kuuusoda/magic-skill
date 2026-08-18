@@ -4,6 +4,7 @@ updated: YYYY-MM-DD
 type: synthesis
 block: cedh-meta
 format: cedh
+status: <seed|stub|draft|verified|deprecated>
 tags: [cEDH, meta, 环境快照]
 commander: ""                               # meta 快照通常留空
 archetype: ""                               # meta 快照通常留空

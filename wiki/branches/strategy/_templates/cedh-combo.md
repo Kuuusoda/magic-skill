@@ -4,6 +4,7 @@ updated: YYYY-MM-DD
 type: concept
 block: cedh-combo
 format: cedh
+status: <seed|stub|draft|verified|deprecated>
 lock_type: ""                              # 留空=制胜 combo；soft-lock/hard-lock=stax 锁
 tags: [cEDH, 组合技, <combo名>]
 commander: ""                               # 通用 combo 留空；主将专属则填

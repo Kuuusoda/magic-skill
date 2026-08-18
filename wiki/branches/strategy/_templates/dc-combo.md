@@ -4,6 +4,7 @@ updated: YYYY-MM-DD
 type: concept
 block: dc-combo
 format: duel-commander
+status: <seed|stub|draft|verified|deprecated>
 tags: [Duel Commander, 法禁, combo]
 commander: ""
 archetype: Combo

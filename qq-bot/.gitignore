@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+
+# 环境变量（敏感信息）
+.env
+.env.local
+.env.*.local
+
+# 日志
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# NapCat（太大，不提交）
+napcat/NapCat/
+
+# 临时文件
+*.tmp
+*.bak

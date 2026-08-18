@@ -4,6 +4,7 @@ updated: 2026-07-08
 type: synthesis
 block: dc-deck
 format: duel-commander
+status: stub
 tags: [Duel Commander, 法禁, 套牌, Control, Combo]
 commander: "凯丝，离群法师（Kess, Dissident Mage）"
 pair_type: single
@@ -39,4 +40,3 @@ cards_cited:
 ## 解析提示
 
 用户说 `kess` 且语境是法禁/指挥官/meta 时，应优先解析为 Kess, Dissident Mage；若用户明显在问地牌或其他 Kessig 词根，再追问确认。
-

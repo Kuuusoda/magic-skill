@@ -1,0 +1,38 @@
+# 排除不需要的文件
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# 排除开发文件
+.git/
+.gitignore
+.pytest_cache/
+.mypy_cache/
+*.log
+.env
+.env.local
+
+# 排除测试
+tests/
+test_*.py
+*_test.py
+
+# 排除部署文件（除了当前需要的）
+docker-compose*.yml
+deploy/
+
+# 排除 NapCat 数据
+napcat/
+
+# 排除文档（但保留 requirements.txt）
+*.md
+!requirements.txt

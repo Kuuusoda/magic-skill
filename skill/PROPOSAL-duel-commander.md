@@ -1,10 +1,11 @@
 # 提案：法禁 EDH（Duel Commander）模块架构
 
 - 文档地位:在 strategy 分支下新增 **Duel Commander（法式指挥官，"法禁"）** 赛制模块,与 cedh 对称并列。复用既有 GitHub Fork+PR+CI 贡献基础设施。
-- 版本:**v0.9(大型赛事备战补充)**——v0.2 并入第1轮 9 项 blocking;v0.3 banlist 改自动抓取;v0.4 并入**确认轮**(3 reviewer:v0.2 闭环 approve + 自动抓取 7 项 + 泛化集成 3 项)全部 blocking;v0.5 修正 banlist 决策遗留冲突,补齐内容生产/导航/验收设计;v0.6 修正 Bo1/55 误口径,补规则版本/合法性/实战路线图;v0.7 补实体消歧;v0.8 落地目录、模板、种子内容与 skill;v0.9 补大型赛事备战/牌表审计/时钟计划。**后续待实施 CI/banlist 自动化。**
-- 创建:2026-06-18　更新:2026-07-08
+- 版本:**v1.0(CI 泛化与共享契约落地)**——v0.2 并入第1轮 9 项 blocking;v0.3 banlist 改自动抓取;v0.4 并入**确认轮**(3 reviewer:v0.2 闭环 approve + 自动抓取 7 项 + 泛化集成 3 项)全部 blocking;v0.5 修正 banlist 决策遗留冲突,补齐内容生产/导航/验收设计;v0.6 修正 Bo1/55 误口径,补规则版本/合法性/实战路线图;v0.7 补实体消歧;v0.8 落地目录、模板、种子内容与 skill;v0.9 补大型赛事备战/牌表审计/时钟计划;v1.0 落地 `lint_strategy_block.py`、`verify_cards.py` 覆盖 Duel Commander、workflow runtime/strategy gate 与 L2 shared。**后续待实施 banlist 自动抓取、dc issue 表单与 render_dc_issue.py。**
+- 创建:2026-06-18　更新:2026-07-09
 - **v0.7→v0.8 种子落地补充**:新增 `wiki/branches/strategy/duel-commander/` 目录骨架、`index.md`、`aliases.md`、`rules/source-registry.md`、最小 meta seed、Kess/Niv 两个 deck stub、6 个 dc 模板与 `skill/duel-commander-breaker/SKILL.md`;同步 strategy/wiki 索引入口。此轮只落知识层与 skill 层,暂不触碰 CI/banlist 抓取脚本。
 - **v0.8→v0.9 大型赛事备战补充**:以长期参加大型法禁赛事的牌手视角补缺口:skill 增加冠军赛压力测试、牌表审计、flex slots、已知对手准备、时钟计划、地基/曲线审计与“缺少快照不得确认合法性”红线;`dc-deck` 模板增加牌表审计、地基与曲线、flex slots、时钟计划;新增 `decision-trees/tournament-prep-checklist.md`。
+- **v0.9→v1.0 CI 泛化落地**:`lint_cedh_block.py` 改为 `lint_strategy_block.py` shim 化;`verify_cards.py` 覆盖 `wiki/branches/strategy/duel-commander/**`;GitHub workflow 在保留 required check 名称的前提下加入 dc paths/runtime paths、skill frontmatter 检查和 `card_resolve.py` 回归测试;L2 shared 通过 `opencode.json` 注入主会话。
 - **v0.5→v0.6 规则版本补充**:① 撤回"Bo1/55 分钟"固化口径,改为官方默认 BO3/50 分钟,主办方可在赛前覆盖;② 增加官方来源注册表与新旧规则选择算法;③ 增加法禁合法性校验矩阵;④ 增加高手向实战内容路线图(调度、先后手、换将、指挥官依赖度、威胁/解牌基准)。
 - **v0.6→v0.7 牌名消歧补充**:针对"2099"这类简称/别名/部分牌名,新增实体解析与赛制语境重排规则:不得直接采用数据库第一个命中;必须列候选、按法禁合法性与 meta/内容块出现率重排,低置信时追问用户。
 - **v0.4→v0.5 设计补充**:① 修正"用户决策固化"中 banlist 仍写手动维护的遗留冲突,统一为自动抓取+自动开 PR+人工 review/merge;② 补 `index.md` 导航与 strategy/wiki 总索引回链;③ 补内容来源分层、模板必备章节、首批种子内容、skill 输出契约、验收矩阵,避免只落 CI/banlist 而缺少可消费知识层。
@@ -16,7 +17,7 @@
 > **用户决策固化**:
 > ① 法禁 = **Duel Commander**（1v1、起始 20 血、无 21 点指挥官伤害、独立法国禁牌表;官方默认 BO3/50 分钟,主办方可在赛前公告改成其他赛制/时长）。
 > ② archetype 枚举(**7 类**):Aggro / Control / Midrange / Combo / Stax / Voltron / Tempo。
-> ③ 禁牌表 = **单一事实源快照**,由 `fetch_dc_banlist.py` 从 source-registry 记录的官方 B&R 端点自动抓取,定时自动开 PR,维护者 review/merge 后生效;快照带 `banlist_as_of`。
+> ③ 禁牌表 = **单一事实源快照**,由 `fetch_dc_banlist.py` 从 source-registry 记录的官方 B&R 端点自动抓取,定时自动开 PR,维护者 review/merge 后生效;快照带 `banlist_as_of`,并至少区分 `banned` / `banned_as_commander` / `banned_as_companion`。
 > ④ 禁牌**硬校验**:套牌块 cards_cited/commander 命中禁牌 → CI **ERROR 挡合并**。
 > ⑤ skill 命名 **`duel-commander-breaker`**。
 > ⑥ lint **泛化**为 `lint_strategy_block.py`(一份管 cedh + duel-commander + 未来赛制)。
@@ -146,6 +147,7 @@ CI 不应只查牌名与 banlist,还要覆盖法禁玩家最常踩的合法性�
 | `banned` 命中 commander 或 99 | 必须 | 可选 | 必须标注 | 不适用 | ERROR |
 | `banned_as_commander` 命中 commander | 必须 | 可选 | 必须标注 | 不适用 | ERROR |
 | `banned_as_commander` 仅出现在 99 | 允许,但建议标注 | 不适用 | 允许 | 不适用 | INFO |
+| `banned_as_companion` 命中 companion | 必须 | 可选 | 必须标注 | 不适用 | ERROR |
 | companion 合法性 | decklist 完整时校验 | 不适用 | 不适用 | 不适用 | WARN/ERROR |
 | sideboard / outside-the-game | decklist 完整时不得出现 | 不适用 | 涉及时标注不生效 | 不适用 | ERROR |
 | stickers/attractions/acorn/digital-only/ante/dexterity 等结构禁用 | 必须 | 不适用 | 必须 | 不适用 | ERROR |
@@ -215,7 +217,7 @@ python3 raw/tools/mtg_wiki/card_resolve.py "2099" --format duel-commander --inte
   "format": "duel-commander",
   "candidates": [
     {
-      "name": "Spider-Man 2099, Miguel O'Hara",
+      "name": "Spider-Man 2099",
       "match_reason": ["name_contains", "legendary_creature", "duel_legal"],
       "format_signals": ["seen_in_dc_meta_or_content"],
       "confidence": 0.91
@@ -314,7 +316,7 @@ resolver 的实现可以先不复杂:读取 alias 表 + 遍历本地 oracle name
 
 不得在低置信时直接生成策略建议。若用户问题中已有"法禁 meta/占比/指挥官"上下文,可以先给出最可能候选,但必须标注:
 
-> 我按法禁语境将 `2099` 解析为 `Spider-Man 2099, Miguel O'Hara`;若你指另一张牌请纠正。
+> 我按法禁语境将 `2099` 解析为 `Spider-Man 2099`;若你指另一张牌请纠正。
 
 #### 别名表
 
@@ -323,7 +325,7 @@ resolver 的实现可以先不复杂:读取 alias 表 + 遍历本地 oracle name
 ```yaml
 aliases:
   "2099":
-    preferred: "Spider-Man 2099, Miguel O'Hara"
+    preferred: "Spider-Man 2099"
     format: duel-commander
     reason: "DC meta shorthand; commander usage signal"
     as_of: YYYY-MM-DD

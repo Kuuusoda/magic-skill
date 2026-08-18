@@ -4,6 +4,7 @@ updated: YYYY-MM-DD
 type: synthesis                             # 块类型映射：deck→synthesis（见贡献规范）
 block: cedh-deck
 format: cedh                               # 校验键，决定 archetype 取值域
+status: <seed|stub|draft|verified|deprecated>
 tags: [cEDH, 套牌, <原型>]
 commander: "<主将中文（English）> // <副将/背景中文（English）>"  # 单将则右侧留空
 pair_type: <single|partner|partner-with|friends-forever|background>

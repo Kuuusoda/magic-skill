@@ -8,7 +8,7 @@
 
 | 层级 | 用途 | 内容 |
 |------|------|------|
-| **原始资料** (`raw/`) | 不可变数据源 | CR/MTR/IPG 规则文档、37,230 张牌数据、EDH 数据 |
+| **原始资料** (`raw/`) | 不可变数据源 | CR/MTR/IPG 规则文档、历史牌张数据摘要、EDH 数据 |
 | **通用知识库** (`wiki/`) | 面向所有受众 | 概念页、实体页、来源摘要、综合分析 |
 | **分支专用层** (`wiki/branches/`) | 面向特定场景 | 裁判决策树、策略框架、创作模板 |
 | **Agent/Skill** (`agent/`, `skill/`) | 可协作的配置 | 裁判 agent 定义、skill 工作流 |
@@ -29,7 +29,7 @@
 | 综合分析 | 6 |
 | Python 工具 | 9 |
 | Agent 定义 | 8 |
-| Skill 定义 | 3 |
+| Skill 定义 | 5 |
 | Schema 定义 | 5 |
 | 原始资料文件 | 103 |
 
@@ -51,8 +51,12 @@
 │   ├── mtg-wiki/
 │   │   ├── SKILL.md                # 万智牌全知识库 skill
 │   │   └── SKILL_EN.md             # 英文版
-│   └── modern-breaker/
-│       └── SKILL.md                # 摩登赛制破阵分析 skill
+│   ├── modern-breaker/
+│   │   └── SKILL.md                # 摩登赛制破阵分析 skill
+│   ├── duel-commander-breaker/
+│   │   └── SKILL.md                # 法禁 Duel Commander 竞技策略 skill
+│   └── limited-master/
+│       └── SKILL.md                # 限制赛学习、评分与实战教练 skill
 ├── schema/                         # JSON Schema 定义
 │   ├── query-plan.json             # 查询计划 schema
 │   ├── card-info.json              # 牌张信息 schema
@@ -63,7 +67,7 @@
 │   ├── cr/                         # 完整规则（CR 1–9 章 + 词汇表）
 │   ├── ipg/                        # 违规处理方针
 │   ├── mtr/                        # 比赛规则
-│   ├── data/                       # 牌张数据（37,230 Oracle 牌）
+│   ├── data/                       # 构建期牌张数据摘要；运行时索引可由工具生成
 │   ├── references/                 # 专题参考文档（待重构为自动生成索引）
 │   ├── tools/                      # Python 工具集（牌张查询、规则查询、牌名翻译）
 │   └── assets/                     # 图片和附件
@@ -122,7 +126,7 @@
 - 套牌原型概览
 
 ### 数据与分析
-- 37,230 张唯一 Oracle 牌，从 526,803 条记录中提取
+- Wiki 构建期曾从 526,803 条记录中提取 37,230 张唯一 Oracle 牌；运行时本地索引为可选生成物
 - 分布索引：颜色、法术力费用、赛制、超类型、副类型、关键词、系列（1,028 个）
 
 ## 核心操作
@@ -150,7 +154,7 @@
 
 | 脚本 | 用途 |
 |------|------|
-| `raw/tools/mtg_wiki/card_search.py` | 牌张查询（本地 37K + mtgch API + Scryfall API） |
+| `raw/tools/mtg_wiki/card_search.py` | 牌张查询（可选本地索引 + mtgch API + Scryfall API） |
 | `raw/tools/mtg_wiki/rule_search.py` | 规则查询（支持规则号或关键词） |
 | `raw/tools/mtg_wiki/name_translator.py` | 牌名翻译（EN↔CN） |
 | `raw/tools/mtg_wiki/scryfall_rulings.py` | Scryfall 裁定查询 |
@@ -176,7 +180,7 @@ python3 raw/tools/mtg_wiki/name_translator.py "Scapeshift"
 # {"name": "Scapeshift", "translated_name": "变境", "source": "cache"}
 ```
 
-查找流程：本地索引 → mtgch API → Scryfall API，优先返回官方译名。
+查找流程：可选本地索引（存在时）→ mtgch API → Scryfall API，优先返回官方译名。
 
 ## 浏览 Wiki
 
@@ -192,6 +196,8 @@ python3 raw/tools/mtg_wiki/name_translator.py "Scapeshift"
 - **mtg-wiki agent** — 通用知识库查询（牌张查询、牌名翻译、策略咨询）
 - **mtg-judge-zh agent** — 中文规则裁判（多 agent pipeline：query-decomposer → card/rule/ruling-lookup → interaction-analyzer → checker）
 - **modern-breaker skill** — 摩登赛制环境破解与备牌决策
+- **duel-commander-breaker skill** — 法禁 1v1 策略、禁牌表/规则版本边界与赛事备战
+- **limited-master skill** — 限制赛学习、轮抽/现开组牌、单卡评分与 17Lands 辅助复盘
 
 Agent pipeline 的执行流程：
 - **硬编码校验**：每个步骤后由 `validation.py` 校验 Schema 正确性

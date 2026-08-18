@@ -290,7 +290,7 @@ grep -B2 -A3 "践踏" ./raw/cr/glossarycn.md
 
 1. **理解问题** - 明确用户询问的游戏情境
 2. **问题拆解（强制）** - 按【时序】和【机制】两个维度拆解题目
-3. **查询未知卡牌** - 如果用户提到不熟悉的牌，先用 `card_resolve.py` 解析短名/俗称/多候选；确定实体后再用 `card_search.py` 查询本地37k牌库；如未命中再调用 mtgch API
+3. **查询未知卡牌** - 如果用户提到不熟悉的牌，先用 `card_resolve.py` 解析短名/俗称/多候选；确定实体后再用 `card_search.py` 查询 Oracle 详情；本地索引缺失或未命中时使用 mtgch/Scryfall API
 4. **查决策树** - **检查 `wiki/branches/referee/decision-trees/` 是否有匹配决策树**。如有，严格按照决策树检索路径执行
 5. **查询 Wiki 概念页** - 在 `wiki/concepts/` 中查找相关概念解释作为辅助参考
 6. **定位原始规则（强制深度检索）** - 如 Wiki 概念页中的引用不够精确，**再用 `rule_search.py`** 查询规则索引，然后用 Grep/Read 在 `raw/cr/` 读取完整规则原文。**如涉及关键字动作，必须查 CR 702 该关键字正式定义**
@@ -316,8 +316,7 @@ python3 ./raw/tools/mtg_wiki/card_search.py "牌名"
 ```
 
 `card_search.py` 支持：
-- 本地 37,230 张牌精确匹配（O(1)）
-- 本地模糊匹配（编辑距离 ≤2）
+- 本地索引精确/前缀/模糊查询（仅在索引文件存在时）
 - mtgch API 中文优先搜索
 - Scryfall API 英文模糊搜索兜底
 
@@ -354,7 +353,7 @@ GET https://api.scryfall.com/cards/named?fuzzy={牌名}
 
 1. **识别涉及的牌/效应**
 2. **问题拆解（强制）** - 按【时序】和【机制】两个维度拆解
-3. **查询未知卡牌** - 如有不熟悉的牌，先用 `card_resolve.py` 解析歧义；确定实体后再用 `card_search.py` 查询本地37k牌库；如未命中再调用 mtgch API
+3. **查询未知卡牌** - 如有不熟悉的牌，先用 `card_resolve.py` 解析歧义；确定实体后再用 `card_search.py` 查询 Oracle 详情；本地索引缺失或未命中时使用 mtgch/Scryfall API
 4. **查决策树** - 检查 `wiki/branches/referee/decision-trees/` 是否有匹配决策树
 5. **查找各效应的完整规则** - **优先使用 `rule_search.py`** 查询规则索引，再用 Grep/Read 读取完整条文。**如涉及关键字动作，必须查 CR 702 正式定义**
 6. **确定互动层数和时序**（特别是层系统 613）

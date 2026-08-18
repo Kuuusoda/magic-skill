@@ -47,6 +47,11 @@ Step 4: 输出最终答案
 
 项目根目录：`./`
 
+**L2 公共契约注入（必须执行）**：
+- 在任何 `Agent(...)` 调用前，先读取 `./skill/_shared/mtg-common.md`。
+- 构造子 agent prompt 时，把该公共契约与对应 `agent/*.md` 定义一起拼入 prompt。
+- 不依赖子 agent 自行读取 L2，也不假设 `opencode.json` 的 `instructions` 一定会传递到子 agent。
+
 ---
 
 ## 执行步骤
@@ -54,10 +59,11 @@ Step 4: 输出最终答案
 ### Step 1: query-decomposer
 
 **操作：**
-1. 读取 agent 定义：`Read ./agent/query-decomposer.md`
-2. 构造 prompt：将读取的 agent 定义作为系统指令，加上用户原始问题
-3. 调用 `Agent(subagent_type="general-purpose", prompt="...")`
-4. 从输出中提取 JSON 格式的 QueryPlan
+1. 读取公共契约：`Read ./skill/_shared/mtg-common.md`
+2. 读取 agent 定义：`Read ./agent/query-decomposer.md`
+3. 构造 prompt：将公共契约 + agent 定义作为系统指令，加上用户原始问题
+4. 调用 `Agent(subagent_type="general-purpose", prompt="...")`
+5. 从输出中提取 JSON 格式的 QueryPlan
 
 **硬编码 Schema 校验（必须执行）：**
 ```bash
@@ -240,11 +246,12 @@ python3 ./raw/tools/mtg_wiki/scryfall_rulings.py "scryfall_id"
 
 **操作：**
 1. 合并 Step 2 的所有查询结果为 Evidence 包
-2. 读取 agent 定义：
+2. 读取公共契约：`Read ./skill/_shared/mtg-common.md`
+3. 读取 agent 定义：
    - `Read ./agent/interaction-analyzer.md`
    - `Read ./agent/checker.md`
-3. 构造 Evidence 包 + 两个 agent 定义合并作为 prompt，要求同时输出 analysis 和 verdict
-4. 调用 `Agent(subagent_type="general-purpose", prompt="...")`
+4. 构造 Evidence 包 + 公共契约 + 两个 agent 定义合并作为 prompt，要求同时输出 analysis 和 verdict
+5. 调用 `Agent(subagent_type="general-purpose", prompt="...")`
 
 **Agent 输出格式要求**（合并为一个 JSON）：
 ```json

@@ -1,0 +1,19 @@
+[project]
+name = "mtg-qq-bot"
+version = "0.1.0"
+description = "万智牌竞技指挥官 QQ 机器人"
+requires-python = ">=3.10"
+dependencies = [
+    "nonebot2>=2.3.0",
+    "nonebot-adapter-onebot>=2.4.0",
+    "dashscope>=1.20.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+]
+
+[tool.nonebot]
+adapters = [
+    { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" }
+]
+plugins = ["mtg_bot"]
+builtin_plugins = []

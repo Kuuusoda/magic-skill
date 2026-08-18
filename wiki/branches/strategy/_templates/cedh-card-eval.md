@@ -4,6 +4,7 @@ updated: YYYY-MM-DD
 type: concept
 block: cedh-card-eval
 format: cedh
+status: <seed|stub|draft|verified|deprecated>
 tags: [cEDH, 单卡评估, <卡名>]
 commander: ""                               # 通用评估留空；主将专属则填
 archetype: ""                               # 主要适用原型，可留空

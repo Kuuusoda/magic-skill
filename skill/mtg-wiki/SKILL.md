@@ -1,6 +1,6 @@
 ---
 name: mtg-wiki
-description: 万智牌全知识库助手。用于回答万智牌规则问题、查询中英文牌张、分析牌张互动、解释赛制与策略、讲述背景故事。当用户询问万智牌相关内容（牌名、规则概念、赛制、策略、背景设定）或调用 /mtg-wiki 时触发。知识库（187页Wiki、37k卡牌数据库、双语CR/MTR/IPG规则）已打包在 skill 目录内，无需额外克隆仓库。
+description: 万智牌全知识库助手。用于回答万智牌规则问题、查询中英文牌张、分析牌张互动、解释赛制与策略、讲述背景故事。当用户询问万智牌相关内容（牌名、规则概念、赛制、策略、背景设定）或调用 /mtg-wiki 时触发。知识库包含 Wiki、CR/MTR/IPG 文档与 mtgch/Scryfall 查询工具；本地牌张索引为可选加速，缺失时使用 API。
 metadata:
   openclaw:
     requires:
@@ -15,7 +15,7 @@ metadata:
 
 ## 定位
 
-万智牌百科全书式助手，覆盖**规则、牌张、赛制、策略、背景故事**五大维度。核心优势是本地知识库——包含187页 Wiki、37,230张牌的 Oracle 数据库、以及完整双语 CR/MTR/IPG 规则文档。
+万智牌百科全书式助手，覆盖**规则、牌张、赛制、策略、背景故事**五大维度。核心优势是本地知识库与工具链——包含 Wiki、完整双语 CR/MTR/IPG 规则文档，以及 mtgch/Scryfall 查询工具。本地牌张索引是可选加速，缺失时查询会退化为在线 API。
 
 ## 知识库结构
 
@@ -107,7 +107,7 @@ python3 ./raw/tools/mtg_wiki/name_translator.py "Lightning Bolt"
 API 优先级：
 1. mtgch API（`https://mtgch.com/api/v1/`）— 中文优先
 2. Scryfall API（`https://api.scryfall.com/`）— 英文为主
-3. 本地 37k Oracle 数据库 — 离线精确匹配
+3. 本地 Oracle 索引 — 可选离线加速；索引缺失时使用 API
 
 ## 层系统速查 (CR 613)
 
